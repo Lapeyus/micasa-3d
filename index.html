@@ -68,6 +68,8 @@
   #plan .surface-zacate { fill: var(--grass); }
   #plan .surface-provenzal { fill: var(--paving); }
   #plan .surface-hidraulico { fill: var(--tile); }
+  #plan .outdoor rect { cursor: move; }
+  #plan .outdoor rect.sel { stroke: var(--accent); stroke-width: calc(var(--px) * 3px); stroke-dasharray: none; }
   #plan .roofed { stroke: var(--muted); stroke-dasharray: calc(var(--px) * 6px) calc(var(--px) * 4px); stroke-width: calc(var(--px) * 1px); }
   #plan .olabel { fill: var(--muted); text-anchor: middle; font-family: var(--body); pointer-events: none; }
   #plan .op { cursor: ew-resize; }

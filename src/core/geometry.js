@@ -116,7 +116,8 @@ export function resolveOpenings(casa) {
     const s = sideLine(room.rect, o.side);
     const a = s.from + o.offset;
     const b = a + o.width;
-    const sill = o.sill ?? kind.sill ?? 0;
+    // la repisa solo aplica a ventanas; una puerta siempre llega al piso
+    const sill = kind.window ? (o.sill ?? kind.sill ?? 0.9) : 0;
     const top = o.height ?? kind.height ?? casa.defaults.doorHeight;
     out.push({ ...o, axis: s.axis, line: s.line, out: s.out, a, b, sill, top, kindInfo: kind });
   }

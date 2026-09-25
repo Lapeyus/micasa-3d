@@ -84,9 +84,17 @@ export class PlanEditor {
         return;
       }
       const kind = t.dataset.kind, id = t.dataset.id;
-      if (kind === 'room' || kind === 'edge') {
-        const room = this.casa.rooms.find((r) => r.id === id);
-        this.select({ type: 'room', id });
+      // Los exteriores cubren mucha área: el primer toque solo los selecciona y
+      // arrastrar sigue moviendo la vista; ya seleccionados, arrastrar los mueve.
+      if (kind === 'outdoor' && !(this.sel?.type === 'outdoor' && this.sel.id === id)) {
+        this.select({ type: 'outdoor', id });
+        this.drag = { mode: 'pan', start: [e.clientX, e.clientY], view: { ...this.view } };
+        return;
+      }
+      if (kind === 'room' || kind === 'edge' || kind === 'outdoor') {
+        const isOut = kind === 'outdoor' || t.dataset.area === 'outdoor';
+        const room = (isOut ? this.casa.outdoor : this.casa.rooms).find((r) => r.id === id);
+        this.select({ type: isOut ? 'outdoor' : 'room', id });
         this.drag = { mode: kind === 'edge' ? 'edge' : 'move', side: t.dataset.side, room, start: p, rect: [...room.rect], moved: false };
       } else if (kind === 'opening') {
         this.select({ type: 'opening', id });
@@ -175,7 +183,12 @@ export class PlanEditor {
     const outdoor = el('g', { class: 'outdoor' }, s);
     for (const o of this.casa.outdoor ?? []) {
       const [x0, z0, x1, z1] = o.rect;
-      el('rect', { x: x0, y: Y(z1), width: x1 - x0, height: z1 - z0, class: `surface-${o.surface}${o.roof ? ' roofed' : ''}` }, outdoor);
+      const selected = this.sel?.type === 'outdoor' && this.sel.id === o.id;
+      el('rect', {
+        x: x0, y: Y(z1), width: x1 - x0, height: z1 - z0,
+        class: `surface-${o.surface}${o.roof ? ' roofed' : ''}${selected ? ' sel' : ''}`,
+        'data-kind': 'outdoor', 'data-id': o.id,
+      }, outdoor);
       if (o.roof) {
         const t = el('text', { x: (x0 + x1) / 2, y: Y((z0 + z1) / 2), class: 'olabel', 'font-size': 11 * px }, outdoor);
         t.textContent = o.name;
@@ -251,13 +264,15 @@ export class PlanEditor {
     }
 
     // asas para redimensionar el cuarto seleccionado
-    if (this.sel?.type === 'room') {
-      const r = this.casa.rooms.find((q) => q.id === this.sel.id);
+    if (this.sel?.type === 'room' || this.sel?.type === 'outdoor') {
+      const list = this.sel.type === 'room' ? this.casa.rooms : this.casa.outdoor;
+      const r = list.find((q) => q.id === this.sel.id);
       if (r) {
         const [x0, z0, x1, z1] = r.rect;
         const hg = el('g', { class: 'handles' }, s);
         const hw = 10 * px;
-        const H = (side, x, y, w, h) => el('rect', { x, y, width: w, height: h, 'data-kind': 'edge', 'data-id': r.id, 'data-side': side, class: `edge edge-${side}` }, hg);
+        const area = this.sel.type === 'outdoor' ? 'outdoor' : 'room';
+        const H = (side, x, y, w, h) => el('rect', { x, y, width: w, height: h, 'data-kind': 'edge', 'data-area': area, 'data-id': r.id, 'data-side': side, class: `edge edge-${side}` }, hg);
         H('W', x0 - hw / 2, Y(z1), hw, z1 - z0);
         H('E', x1 - hw / 2, Y(z1), hw, z1 - z0);
         H('N', x0, Y(z1) - hw / 2, x1 - x0, hw);

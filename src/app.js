@@ -17,10 +17,18 @@ const DEFAULT = await fetch('./src/core/casa.default.json').then((r) => r.json()
 let casa = load();
 const undo = [];
 
+// Si el borrador base trae una revisión más nueva que la copia guardada, se usa
+// la nueva y la anterior queda respaldada (se puede recuperar con Deshacer).
+let migratedFrom = null;
 function load() {
   try {
     const raw = localStorage.getItem(STORE);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const saved = JSON.parse(raw);
+      if ((saved.revision ?? 1) >= (DEFAULT.revision ?? 1)) return saved;
+      localStorage.setItem(`${STORE}-respaldo-r${saved.revision ?? 1}`, raw);
+      migratedFrom = raw;
+    }
   } catch { /* sin almacenamiento */ }
   return clone(DEFAULT);
 }
@@ -164,6 +172,20 @@ function renderInspector() {
       }, 'danger'),
     );
     box.append(actions);
+  } else if (sel.type === 'outdoor') {
+    const o = casa.outdoor.find((q) => q.id === sel.id);
+    if (!o) return;
+    h(o.name);
+    const [x0, z0, x1, z1] = o.rect;
+    box.append(
+      field('Nombre', o.name, (v) => { o.name = v; }, { type: 'text' }),
+      field('Superficie', o.surface, (v) => { o.surface = v; }, { options: [['zacate', 'Zacate'], ['provenzal', 'Barro provenzal'], ['hidraulico', 'Mosaico hidráulico'], ['cemento', 'Cemento']] }),
+      field('Techado', o.roof ? 'si' : 'no', (v) => { o.roof = v === 'si'; }, { options: [['no', 'No'], ['si', 'Sí, con columnas de ladrillo']] }),
+      grid2(
+        field('Ancho (m)', (x1 - x0).toFixed(2), (v) => { o.rect[2] = +(o.rect[0] + Math.max(0.5, v)).toFixed(3); }),
+        field('Fondo (m)', (z1 - z0).toFixed(2), (v) => { o.rect[3] = +(o.rect[1] + Math.max(0.5, v)).toFixed(3); }),
+      ),
+    );
   } else if (sel.type === 'opening') {
     const o = casa.openings.find((q) => q.id === sel.id);
     if (!o) return;
@@ -533,8 +555,13 @@ renderer.setAnimationLoop(() => {
 
 // ---------- Arranque ----------
 plan.setCasa(casa, { fit: true });
+if (migratedFrom) {
+  undo.push(migratedFrom);
+  save();
+}
 renderInspector();
 showIssues();
+if (migratedFrom) status(`Se cargó la revisión ${DEFAULT.revision} de la planta. Su versión anterior quedó respaldada; Deshacer la recupera.`);
 setMode(location.hash === '#3d' ? '3d' : 'plan');
 requestAnimationFrame(() => { plan.fit(); plan.render(); frame('maqueta'); });
 window.__casa = { get casa() { return casa; }, scene, camera, controls, plan };

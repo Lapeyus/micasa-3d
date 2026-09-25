@@ -1,3 +1,7 @@
 photos/
 .claude/
 .DS_Store
+.venv/
+panoramas/
+panoramas-web/
+tools/*.json

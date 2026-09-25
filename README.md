@@ -1,27 +1,37 @@
-# Cocina y Lavado 3D
+# Mi Casa 3D
 
-Modelo 3D paramétrico (Three.js / WebGL) de la cocina en galera y el pasillo de lavado,
-reconstruido a partir de las 29 fotos de `photos/`, la vista de calle y la vista satelital.
+Modelo de toda la casa construido sobre una **estructura base** (`src/core/casa.default.json`)
+de la que salen varias visualizaciones.
 
 ## Abrir
 
 ```bash
-python3 -m http.server 5173
+python3 tools/serve.py
 ```
 
-Luego abrir http://localhost:5173 (los módulos ES necesitan servirse por HTTP, no con doble clic).
+Luego http://localhost:5173 (servidor sin caché; los módulos ES necesitan HTTP).
 
-## Estructura
+## Capas
 
-- `src/layout.js` — **todas las medidas** en metros. Es el único archivo que hay que tocar para
-  corregir dimensiones (también se pueden editar en la pestaña *Medidas* de la app).
-- `src/model.js` — genera paredes, vanos, cielo raso, muebles, electrodomésticos, techo y exterior
-  a partir del layout. Cada pieza es un grupo con nombre, etapa de construcción y etiquetas.
-- `src/textures.js` — texturas procedurales (piso provenzal, tablilla del cielo, caoba, mosaico, zinc…).
-- `src/main.js` — cámara, recorridos, animaciones (construir, vaciar cocina, puertas), cotas y exportación a GLB.
+| Capa | Archivo | Qué hace |
+|---|---|---|
+| Estructura base | `src/core/casa.default.json` | Cuartos (rectángulos a cara interior de muro), vanos, exteriores y panorámicas. Solo datos. |
+| Núcleo | `src/core/geometry.js` | Deriva muros (compartidos o de fachada), corta vanos, valida traslapes. No depende de three.js. |
+| Editor de planta | `src/arch/plan.js` | SVG: mover y redimensionar cuartos, deslizar puertas, ubicar puntos de foto. |
+| Visor arquitectónico | `src/arch/scene3d.js` | three.js con materiales reales, corte de sección, recorrido a pie. |
+| Panorámicas | `src/arch/pano.js` | Proyección cilíndrica de las fotos del modo Panorama del Pixel. |
+| Cocina detallada | `cocina/` | Primera versión: cocina y lavado con muebles y animaciones. |
 
 ## Coordenadas
 
-`x` = de la pared verde hacia la ventana, `y` = altura, `z` = del muro del lavado hacia la sala
-(negativo = dentro del lavado). El modelo se refleja en `x` al final para que la orientación
-coincida con las fotos.
+En planta: `x` crece a la derecha visto desde la calle, `z` hacia el fondo del lote (`z = 0` es la fachada).
+En three.js el grupo de la casa usa `scale.z = -1` para no quedar en espejo.
+
+## Privacidad
+
+`photos/`, `panoramas/` y `panoramas-web/` están en `.gitignore`: son fotos del interior de la casa y
+solo se ven en la copia local. Para regenerar las versiones web de las panorámicas:
+
+```bash
+mkdir -p panoramas-web && for f in panoramas/*.jpg; do sips -Z 8192 -s formatOptions 80 "$f" --out "panoramas-web/$(basename "$f")"; done
+```

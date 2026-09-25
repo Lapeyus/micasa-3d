@@ -1,22 +1,17 @@
 <meta charset="utf-8">
-<title>Cocina y Lavado 3D</title>
+<title>Mi Casa 3D</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
   :root {
-    --bg: #e7eae1;
-    --panel: #f7f6f1;
-    --panel-2: #efede5;
-    --ink: #221d18;
-    --muted: #6c675d;
-    --line: #d7d3c7;
-    --accent: #a4452b;
-    --accent-ink: #fffaf5;
-    --wood: #4a1f12;
-    --dim: #a4452b;
-    --shadow: 0 10px 30px rgba(40, 30, 20, 0.14);
+    --bg: #e7eae1; --panel: #f7f6f1; --panel-2: #efede5; --ink: #221d18; --muted: #6c675d; --line: #d7d3c7;
+    --accent: #a4452b; --accent-ink: #fffaf5; --wood: #4a1f12; --danger: #a3261b;
+    --plan-bg: #f4f2ea; --grid: rgba(60, 50, 40, 0.07); --wall: #2b2520; --wall-ext: #16120f;
+    --k-cocina: #f3d9b8; --k-lavado: #dfe6ef; --k-bano: #d4e8ec; --k-dorm: #efe0ea; --k-sala: #f6e7c8;
+    --k-estudio: #e4ecd6; --k-gim: #e1e1ea; --k-pasillo: #ecebe4; --k-bodega: #e2d6bf;
+    --grass: #cfe0b8; --paving: #e8d7c4; --tile: #eadfca;
     --display: 'Bricolage Grotesque', 'Avenir Next', 'Segoe UI', system-ui, sans-serif;
     --body: 'Instrument Sans', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
     --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
@@ -24,344 +19,234 @@
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       color-scheme: dark;
-      --bg: #14120f;
-      --panel: #1e1a16;
-      --panel-2: #26211b;
-      --ink: #efe8dc;
-      --muted: #a49c8d;
-      --line: #383128;
-      --accent: #e27b56;
-      --accent-ink: #1a0f0a;
-      --wood: #d59a74;
-      --dim: #f0a07e;
-      --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+      --bg: #14120f; --panel: #1e1a16; --panel-2: #26211b; --ink: #efe8dc; --muted: #a49c8d; --line: #383128;
+      --accent: #e27b56; --accent-ink: #1a0f0a; --wood: #d59a74; --danger: #f07a6a;
+      --plan-bg: #1a1714; --grid: rgba(255, 240, 220, 0.06); --wall: #e8e0d2; --wall-ext: #fff7ea;
+      --k-cocina: #4a3a26; --k-lavado: #2c3440; --k-bano: #26393d; --k-dorm: #3d2c37; --k-sala: #463a22;
+      --k-estudio: #2f3a26; --k-gim: #2e2e38; --k-pasillo: #2e2b26; --k-bodega: #3a3223;
+      --grass: #26331d; --paving: #3a2f25; --tile: #362e24;
     }
   }
   :root[data-theme="dark"] {
     color-scheme: dark;
-    --bg: #14120f;
-    --panel: #1e1a16;
-    --panel-2: #26211b;
-    --ink: #efe8dc;
-    --muted: #a49c8d;
-    --line: #383128;
-    --accent: #e27b56;
-    --accent-ink: #1a0f0a;
-    --wood: #d59a74;
-    --dim: #f0a07e;
-    --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+    --bg: #14120f; --panel: #1e1a16; --panel-2: #26211b; --ink: #efe8dc; --muted: #a49c8d; --line: #383128;
+    --accent: #e27b56; --accent-ink: #1a0f0a; --wood: #d59a74; --danger: #f07a6a;
+    --plan-bg: #1a1714; --grid: rgba(255, 240, 220, 0.06); --wall: #e8e0d2; --wall-ext: #fff7ea;
+    --k-cocina: #4a3a26; --k-lavado: #2c3440; --k-bano: #26393d; --k-dorm: #3d2c37; --k-sala: #463a22;
+    --k-estudio: #2f3a26; --k-gim: #2e2e38; --k-pasillo: #2e2b26; --k-bodega: #3a3223;
+    --grass: #26331d; --paving: #3a2f25; --tile: #362e24;
   }
-
   [hidden] { display: none !important; }
   html, body { height: 100%; }
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--ink);
-    font: 14px/1.45 var(--body);
-    overflow: hidden;
-  }
-  #stage { position: fixed; inset: 0; }
-  #stage canvas { display: block; touch-action: none; }
-  #labels { position: fixed; inset: 0; pointer-events: none; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.45 var(--body); overflow: hidden; }
 
-  .dim-label {
-    font: 500 11px/1 var(--mono);
-    font-variant-numeric: tabular-nums;
-    color: var(--accent-ink);
-    background: var(--dim);
-    padding: 4px 6px;
-    border-radius: 3px;
-    white-space: nowrap;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+  .app { position: fixed; inset: 0; display: grid; grid-template-columns: 1fr 360px; grid-template-rows: auto 1fr; }
+  header {
+    grid-column: 1 / -1; display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+    padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 10px; border-bottom: 1px solid var(--line); background: var(--panel);
   }
+  header h1 { margin: 0; font: 700 20px/1 var(--display); letter-spacing: -0.01em; }
+  header .sub { color: var(--muted); font: 500 11px/1 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; }
+  .modes { display: flex; gap: 4px; margin-left: auto; background: var(--panel-2); padding: 3px; border-radius: 8px; border: 1px solid var(--line); }
+  .modes button { appearance: none; border: 0; background: transparent; color: var(--muted); font: 600 13px/1 var(--body); padding: 8px 14px; border-radius: 6px; cursor: pointer; }
+  .modes button[aria-selected="true"] { background: var(--ink); color: var(--panel); }
 
-  /* Encabezado */
-  .brand {
-    position: fixed;
-    top: calc(16px + env(safe-area-inset-top, 0px));
-    left: 16px;
-    max-width: min(430px, calc(100vw - 32px));
-    display: grid;
-    gap: 2px;
-    pointer-events: none;
-    padding: 10px 14px 12px;
-    border-radius: 8px;
-    background: color-mix(in srgb, var(--panel) 84%, transparent);
-    -webkit-backdrop-filter: blur(6px);
-    backdrop-filter: blur(6px);
-  }
-  .brand h1 {
-    margin: 0;
-    font: 700 26px/1.05 var(--display);
-    letter-spacing: -0.01em;
-    text-wrap: balance;
-  }
-  .brand p { margin: 0; color: var(--muted); font-size: 13px; }
-  .brand .tag {
-    justify-self: start;
-    font: 500 10.5px/1 var(--mono);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin-bottom: 4px;
-  }
+  main { position: relative; overflow: hidden; }
+  #plan { position: absolute; inset: 0; width: 100%; height: 100%; background: var(--plan-bg); touch-action: none; user-select: none; cursor: grab; }
+  #stage3d { position: absolute; inset: 0; }
+  #stage3d canvas { display: block; touch-action: none; }
+  .labels3d { position: absolute; inset: 0; pointer-events: none; }
+  .rlabel { font: 600 11px/1 var(--body); color: #221d18; background: rgba(255, 252, 245, 0.86); padding: 3px 6px; border-radius: 3px; white-space: nowrap; }
 
-  /* Panel lateral */
-  .panel {
-    position: fixed;
-    top: calc(16px + env(safe-area-inset-top, 0px));
-    right: 16px;
-    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-    width: 340px;
-    display: flex;
-    flex-direction: column;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    box-shadow: var(--shadow);
-    overflow: hidden;
-  }
-  .tabs { display: grid; grid-template-columns: repeat(3, 1fr) 44px; border-bottom: 1px solid var(--line); }
-  .tabs .collapse { color: var(--muted); font: 600 16px/1 var(--body); padding: 0; }
-  body.panel-closed .panel { bottom: auto; width: auto; }
-  body.panel-closed .panel .tabpanel { display: none !important; }
-  body.panel-closed .tabs { grid-template-columns: auto; }
-  body.panel-closed .tabs [role="tab"] { display: none; }
-  body.panel-closed .tabs .collapse { padding: 12px 14px; font-size: 13px; }
-  body.panel-closed .timeline { right: 16px; }
-  .tabs button {
-    appearance: none; border: 0; background: transparent; color: var(--muted);
-    font: 600 13px/1 var(--body); padding: 14px 8px; cursor: pointer;
-    border-bottom: 2px solid transparent;
-  }
-  .tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
-  .tabs button:focus-visible, .btn:focus-visible, .chip:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .tabpanel { flex: 1; overflow-y: auto; padding: 16px; display: grid; gap: 18px; align-content: start; }
+  /* planta */
+  #plan .grid line { stroke: var(--grid); stroke-width: calc(var(--px) * 1px); }
+  #plan .room { stroke: none; cursor: move; }
+  #plan .room.sel { stroke: var(--accent); stroke-width: calc(var(--px) * 3px); }
+  #plan .room.conf-baja { fill-opacity: 0.75; }
+  #plan .walls rect { fill: var(--wall); }
+  #plan .walls rect.ext { fill: var(--wall-ext); }
+  #plan .surface-zacate { fill: var(--grass); }
+  #plan .surface-provenzal { fill: var(--paving); }
+  #plan .surface-hidraulico { fill: var(--tile); }
+  #plan .roofed { stroke: var(--muted); stroke-dasharray: calc(var(--px) * 6px) calc(var(--px) * 4px); stroke-width: calc(var(--px) * 1px); }
+  #plan .olabel { fill: var(--muted); text-anchor: middle; font-family: var(--body); pointer-events: none; }
+  #plan .op { cursor: ew-resize; }
+  #plan .op .hit { fill: transparent; }
+  #plan .op .gap { fill: var(--plan-bg); }
+  #plan .op .win { fill: var(--plan-bg); stroke: var(--wall); stroke-width: calc(var(--px) * 1px); }
+  #plan .op .glass { fill: var(--wall); }
+  #plan .op .leaf { stroke: var(--wall); stroke-width: calc(var(--px) * 1.5px); }
+  #plan .op .swing { fill: none; stroke: var(--muted); stroke-width: calc(var(--px) * 1px); stroke-dasharray: calc(var(--px) * 3px) calc(var(--px) * 3px); }
+  #plan .op.sel .gap, #plan .op.sel .win { fill: var(--accent); }
+  #plan .labels text { text-anchor: middle; font-family: var(--body); pointer-events: none; fill: var(--ink); }
+  #plan .labels .rname { font-weight: 600; }
+  #plan .labels .rdim { font-family: var(--mono); fill: var(--muted); font-variant-numeric: tabular-nums; }
+  #plan .edge { fill: var(--accent); fill-opacity: 0.35; }
+  #plan .edge-W, #plan .edge-E { cursor: ew-resize; }
+  #plan .edge-N, #plan .edge-S { cursor: ns-resize; }
+  #plan .pano circle { fill: var(--accent); stroke: var(--plan-bg); stroke-width: calc(var(--px) * 2px); cursor: pointer; }
+  #plan .pano.sel circle { fill: var(--ink); }
+  #plan .pano text { fill: var(--accent-ink); text-anchor: middle; font-family: var(--mono); font-weight: 600; pointer-events: none; }
+
+  /* panel */
+  aside { border-left: 1px solid var(--line); background: var(--panel); overflow-y: auto; padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 18px; align-content: start; }
   .section { display: grid; gap: 8px; }
-  .section h2 {
-    margin: 0;
-    font: 500 10.5px/1 var(--mono);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--muted);
+  .section > h2 { margin: 0; font: 500 10.5px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  #inspector { display: grid; gap: 10px; }
+  #inspector h3 { margin: 6px 0 0; font: 700 16px/1.2 var(--display); }
+  .note { margin: 0; color: var(--muted); font-size: 12.5px; }
+  .f { display: grid; gap: 4px; font-size: 12px; color: var(--muted); }
+  .f input, .f select, .row select {
+    font: 500 13px/1.2 var(--body); color: var(--ink); background: var(--panel-2);
+    border: 1px solid var(--line); border-radius: 5px; padding: 7px 8px; width: 100%; box-sizing: border-box;
   }
-  .section .note { margin: 0; color: var(--muted); font-size: 12.5px; }
-  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-  .btn {
-    appearance: none; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-    border: 1px solid var(--line); background: var(--panel-2); color: var(--ink);
-    font: 500 13px/1.2 var(--body); padding: 9px 10px; border-radius: 6px; text-align: center;
-  }
+  .f input[type="number"] { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .f input[type="color"] { height: 34px; padding: 2px; }
+  .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .row select { flex: 1; min-width: 0; width: auto; }
+  .oprow { display: grid; gap: 8px; padding: 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel-2); }
+  .optitle { font: 600 12.5px/1.2 var(--body); }
+  .btn { appearance: none; cursor: pointer; border: 1px solid var(--line); background: var(--panel-2); color: var(--ink); font: 500 13px/1.2 var(--body); padding: 8px 10px; border-radius: 6px; }
   .btn:hover { border-color: var(--muted); }
   .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
-  .btn.primary:hover { filter: brightness(1.06); }
+  .btn.danger { color: var(--danger); }
+  .btn.small { padding: 5px 8px; font-size: 12px; justify-self: start; }
   .btn[aria-pressed="true"] { background: var(--ink); color: var(--panel); border-color: var(--ink); }
-  .btn:disabled { opacity: 0.5; cursor: default; }
-  .toggles { display: flex; flex-wrap: wrap; gap: 6px; }
-  .chip {
-    appearance: none; cursor: pointer;
-    border: 1px solid var(--line); background: transparent; color: var(--ink);
-    font: 500 12.5px/1 var(--body); padding: 7px 10px; border-radius: 999px;
-  }
-  .chip[aria-pressed="true"] { background: var(--wood); color: var(--panel); border-color: var(--wood); }
-
-  .fields { display: grid; gap: 6px; }
-  .field { display: grid; grid-template-columns: 1fr 92px; align-items: center; gap: 8px; }
-  .field label { font-size: 12.5px; color: var(--ink); }
-  .field .inp { position: relative; }
-  .field input {
-    width: 100%; box-sizing: border-box;
-    font: 500 13px/1 var(--mono); font-variant-numeric: tabular-nums;
-    color: var(--ink); background: var(--panel-2);
-    border: 1px solid var(--line); border-radius: 5px; padding: 7px 24px 7px 8px; text-align: right;
-  }
-  .field .inp::after { content: 'm'; position: absolute; right: 8px; top: 50%; transform: translateY(-50%); color: var(--muted); font: 12px var(--mono); }
-  .group-title { font: 600 13px/1 var(--display); margin: 8px 0 2px; }
+  .grid-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .btn:focus-visible, .modes button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  #issues { margin: 0; padding: 10px 10px 10px 28px; border-radius: 6px; background: color-mix(in srgb, var(--danger) 12%, var(--panel)); color: var(--ink); font-size: 12.5px; }
   .status { font: 12px var(--mono); color: var(--muted); min-height: 1.2em; margin: 0; }
+  .file { position: relative; overflow: hidden; }
+  .file input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .range { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; font: 12px var(--mono); color: var(--muted); }
+  .range input { width: 100%; accent-color: var(--accent); }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 12px; color: var(--muted); }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
 
-  /* Línea de tiempo de construcción */
-  .timeline {
-    position: fixed;
-    left: 16px;
-    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-    right: 372px;
-    display: flex; flex-wrap: wrap; gap: 4px;
-    pointer-events: none;
-  }
-  .timeline span {
-    font: 500 11px/1 var(--mono);
-    padding: 6px 8px; border-radius: 4px;
-    background: var(--panel); color: var(--muted); border: 1px solid var(--line);
-    transition: background .25s, color .25s;
-  }
-  .timeline span.done { color: var(--ink); }
-  .timeline span.now { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .panoList { display: grid; gap: 6px; }
+  .panoItem { appearance: none; display: grid; grid-template-columns: 34px 1fr; gap: 10px; align-items: center; text-align: left; border: 1px solid var(--line); background: var(--panel-2); color: var(--ink); border-radius: 6px; padding: 8px; cursor: pointer; font: 13px var(--body); }
+  .panoItem:hover { border-color: var(--muted); }
+  .panoItem .pid { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font: 600 12px var(--mono); }
+  .panoItem strong { display: block; font-weight: 600; }
+  .panoItem small { color: var(--muted); }
 
-  .hover-tag {
-    position: fixed; pointer-events: none;
-    font: 600 12px/1 var(--body);
-    background: var(--ink); color: var(--panel);
-    padding: 6px 8px; border-radius: 4px; transform: translate(12px, 12px);
-  }
-  .walk-hint {
-    position: fixed; left: 50%; transform: translateX(-50%);
-    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-    font: 12px var(--body); color: var(--muted);
-    background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px;
-  }
-  .dpad {
-    position: fixed; left: 24px; bottom: calc(72px + env(safe-area-inset-bottom, 0px));
-    display: grid; grid-template-columns: repeat(3, 44px); grid-template-rows: repeat(2, 44px); gap: 4px;
-  }
-  .dpad button {
-    appearance: none; border: 1px solid var(--line); background: var(--panel); color: var(--ink);
-    border-radius: 8px; font: 600 16px/1 var(--body); cursor: pointer; touch-action: none;
-  }
-  .dpad .up { grid-column: 2; grid-row: 1; }
-  .dpad .left { grid-column: 1; grid-row: 2; }
-  .dpad .down { grid-column: 2; grid-row: 2; }
-  .dpad .right { grid-column: 3; grid-row: 2; }
+  .walk-hint { position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; font-size: 12px; color: var(--muted); }
 
-  .loading {
-    position: fixed; inset: 0; display: grid; place-items: center;
-    font: 500 13px var(--mono); color: var(--muted); background: var(--bg);
-  }
+  .pano-overlay { position: fixed; inset: 0; background: #0b0a09; z-index: 10; display: grid; grid-template-rows: auto 1fr; }
+  .pano-bar { display: flex; align-items: center; gap: 12px; padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 10px; color: #efe8dc; background: #16130f; }
+  .pano-bar strong { font: 700 16px var(--display); }
+  .pano-bar span { color: #a49c8d; font-size: 12px; }
+  .pano-bar button { margin-left: auto; }
+  #panoStage { position: relative; }
+  #panoStage canvas { display: block; }
+  .pano-msg { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 24px; color: #d9d2c5; }
+  .pano-msg p { max-width: 42ch; }
 
-  @media (max-width: 1000px) and (min-width: 761px) {
-    .panel { width: 300px; }
-    .timeline { right: 332px; }
-    .brand { max-width: calc(100vw - 350px); }
-  }
-  @media (max-width: 760px) {
-    .brand h1 { font-size: 21px; }
-    .brand p { display: none; }
-    .panel { top: auto; left: 0; right: 0; bottom: 0; width: auto; height: 44%; border-radius: 12px 12px 0 0; padding-bottom: env(safe-area-inset-bottom, 0px); }
-    .timeline { right: 16px; bottom: calc(44% + 10px); }
-    body.panel-closed .panel { left: auto; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); height: auto; border-radius: 10px; }
-    body.panel-closed .timeline, body.panel-closed .dpad { bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
-    .dpad { bottom: calc(44% + 52px); left: 16px; }
-    .walk-hint { display: none; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .timeline span { transition: none; }
+  @media (max-width: 820px) {
+    .app { grid-template-columns: 1fr; grid-template-rows: auto 55% 1fr; }
+    aside { border-left: 0; border-top: 1px solid var(--line); }
+    header .sub { display: none; }
+    .modes { margin-left: 0; }
   }
 </style>
 
-<div id="stage"></div>
-<div id="labels"></div>
-<div class="loading" id="loading">Generando texturas y geometría…</div>
-
-<header class="brand">
-  <span class="tag">Modelo paramétrico · medidas en metros</span>
-  <h1>Cocina y Lavado 3D</h1>
-  <p>Reconstrucción de la cocina en galera y el pasillo de lavado a partir de 29 fotos. Las medidas son estimadas; ajústelas en la pestaña Medidas.</p>
-</header>
-
-<div class="timeline" id="timeline" hidden></div>
-<div class="hover-tag" id="hoverTag" hidden></div>
-<div class="walk-hint" id="walkHint" hidden>Arrastre para mirar · WASD o flechas para caminar</div>
-<div class="dpad" id="dpad" hidden>
-  <button class="up" data-move="f" aria-label="Avanzar">▲</button>
-  <button class="left" data-move="l" aria-label="Izquierda">◀</button>
-  <button class="down" data-move="b" aria-label="Retroceder">▼</button>
-  <button class="right" data-move="r" aria-label="Derecha">▶</button>
-</div>
-
-<aside class="panel">
-  <div class="tabs" role="tablist">
-    <button role="tab" id="tab-ver" aria-selected="true" aria-controls="pane-ver">Recorrer</button>
-    <button role="tab" id="tab-anim" aria-selected="false" aria-controls="pane-anim">Animar</button>
-    <button role="tab" id="tab-med" aria-selected="false" aria-controls="pane-med">Medidas</button>
-    <button class="collapse" id="btnPanel" aria-label="Ocultar panel" title="Ocultar panel">✕</button>
-  </div>
-
-  <div class="tabpanel" id="pane-ver" role="tabpanel" aria-labelledby="tab-ver">
-    <div class="section">
-      <h2>Vista general</h2>
-      <div class="grid2">
-        <button class="btn" data-view="maqueta">Maqueta 3D</button>
-        <button class="btn" data-view="planta">Planta</button>
-        <button class="btn" data-view="fachada">Exterior con techo</button>
-        <button class="btn" data-view="aerea">Aérea (como satélite)</button>
-      </div>
+<div class="app">
+  <header>
+    <div>
+      <div class="sub">Estructura base · casa.json</div>
+      <h1>Mi Casa 3D</h1>
     </div>
-    <div class="section">
-      <h2>Puntos de las fotos</h2>
-      <div class="grid2">
-        <button class="btn" data-view="exterior">Puerta del lavado</button>
-        <button class="btn" data-view="entrada">Entrada a cocina</button>
-        <button class="btn" data-view="fregadero">Fregadero</button>
-        <button class="btn" data-view="hacialavado">Mirando al lavado</button>
-        <button class="btn" data-view="desdesala">Desde la sala</button>
-        <button class="btn" id="btnWalk" aria-pressed="false">Caminar libre</button>
-      </div>
+    <nav class="modes" role="tablist" aria-label="Vista">
+      <button role="tab" data-mode="plan" aria-selected="true">Planta</button>
+      <button role="tab" data-mode="3d" aria-selected="false">3D</button>
+      <button role="tab" data-mode="panos" aria-selected="false">Panorámicas</button>
+    </nav>
+  </header>
+
+  <main>
+    <svg id="plan" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" aria-label="Planta editable de la casa"></svg>
+    <div id="stage3d" hidden>
+      <div class="walk-hint" id="walkHint" hidden>Arrastre para mirar · WASD o flechas para caminar</div>
     </div>
-    <div class="section">
+  </main>
+
+  <aside>
+    <div data-pane="plan" class="section">
+      <h2>Editar planta</h2>
+      <div class="grid-btns">
+        <button class="btn" id="btnAddRoom" type="button">Nuevo cuarto</button>
+        <button class="btn" id="btnFit" type="button">Ver toda la casa</button>
+        <button class="btn" id="btnUndo" type="button">Deshacer</button>
+      </div>
+      <ul id="issues" hidden></ul>
+      <div id="inspector"></div>
+    </div>
+
+    <div data-pane="3d" class="section" hidden>
+      <h2>Vistas</h2>
+      <div class="grid-btns">
+        <button class="btn" data-view3d="maqueta" type="button">Maqueta</button>
+        <button class="btn" data-view3d="seccion" type="button">Sección a 1.30 m</button>
+        <button class="btn" data-view3d="planta" type="button">Planta 3D</button>
+        <button class="btn" id="btnWalk" type="button" aria-pressed="false">Caminar adentro</button>
+      </div>
+      <h2>Corte de sección</h2>
+      <div class="range">
+        <input type="range" id="cut" min="0" max="3" step="0.05" value="0" aria-label="Altura del corte">
+        <span id="cutVal">sin corte</span>
+      </div>
+      <p class="note">Corta todo lo que está por encima de esa altura, como un plano arquitectónico. Deje el corte en 0 para ver la casa completa.</p>
       <h2>Mostrar</h2>
-      <div class="toggles">
-        <button class="chip" id="tgDims" aria-pressed="false">Cotas</button>
-        <button class="chip" id="tgItems" aria-pressed="true">Objetos sueltos</button>
-        <button class="chip" id="tgLaundry" aria-pressed="true">Lavado</button>
-        <button class="chip" id="tgLiving" aria-pressed="true">Sala</button>
-        <button class="chip" id="tgCut" aria-pressed="true">Corte automático</button>
-        <button class="chip" id="tgShell" aria-pressed="false">Techo y exterior</button>
-        <button class="chip" id="tgNight" aria-pressed="false">De noche</button>
+      <div class="grid-btns">
+        <button class="btn" id="t3Outdoor" type="button" aria-pressed="true">Patio y exteriores</button>
+        <button class="btn" id="t3Markers" type="button" aria-pressed="true">Puntos de foto</button>
+        <button class="btn" id="t3Labels" type="button" aria-pressed="true">Nombres</button>
       </div>
-      <p class="note">El corte automático oculta el cielo raso y las paredes que tapan la vista cuando la cámara está afuera. Con Techo y exterior se ve el ala trasera cerrada, con su techo de dos aguas, la casa principal y el árbol.</p>
+      <p class="note">Toque una esfera naranja para abrir la panorámica tomada en ese punto.</p>
     </div>
-  </div>
 
-  <div class="tabpanel" id="pane-anim" role="tabpanel" aria-labelledby="tab-anim" hidden>
-    <div class="section">
-      <h2>Construcción</h2>
-      <button class="btn primary" id="btnBuild">Construir desde cero</button>
-      <p class="note">Levanta el espacio en 8 etapas: piso, paredes, puertas y ventana, cielo raso, muebles bajos, aéreos, electrodomésticos y detalles.</p>
+    <div data-pane="panos" class="section" hidden>
+      <h2>28 panorámicas</h2>
+      <p class="note">Cada una está ubicada en la planta. En la pestaña Planta puede arrastrar el punto al lugar exacto donde la tomó.</p>
+      <div class="panoList" id="panoList"></div>
     </div>
-    <div class="section">
-      <h2>Rediseño de la cocina</h2>
-      <div class="grid2">
-        <button class="btn" id="btnDemo">Vaciar cocina</button>
-        <button class="btn" id="btnRestore" disabled>Volver a amueblar</button>
-      </div>
-      <p class="note">Vaciar retira muebles, cubierta, salpicadero y electrodomésticos, y deja el cascarón con cotas: el punto de partida para el diseño nuevo.</p>
-    </div>
-    <div class="section">
-      <h2>Recorridos</h2>
-      <div class="grid2">
-        <button class="btn" id="btnTour">Recorrido guiado</button>
-        <button class="btn" id="btnOrbit">Vuelta a la maqueta</button>
-        <button class="btn" id="btnDoors">Abrir o cerrar puertas</button>
-        <button class="btn" id="btnStop">Detener</button>
-      </div>
-    </div>
-  </div>
 
-  <div class="tabpanel" id="pane-med" role="tabpanel" aria-labelledby="tab-med" hidden>
     <div class="section">
-      <h2>Medidas del espacio</h2>
-      <p class="note">Salen de las fotos, así que son aproximadas. Mida con cinta y escriba aquí los valores reales: el modelo se recalcula al instante y queda guardado en este navegador.</p>
-    </div>
-    <div class="fields" id="fields"></div>
-    <div class="section">
-      <div class="grid2">
-        <button class="btn" id="btnCopy">Copiar medidas</button>
-        <button class="btn" id="btnReset">Volver a estimadas</button>
-        <button class="btn" id="btnGlb" hidden>Descargar .glb</button>
-        <button class="btn" id="btnJson" hidden>Descargar .json</button>
+      <h2>Datos</h2>
+      <div class="grid-btns">
+        <button class="btn" id="btnCopyJson" type="button">Copiar casa.json</button>
+        <label class="btn file">Importar casa.json<input type="file" id="fileImport" accept="application/json,.json"></label>
+        <button class="btn" id="btnDownloadJson" type="button" hidden>Descargar casa.json</button>
+        <button class="btn" id="btnGlb" type="button" hidden>Descargar .glb</button>
+        <button class="btn danger" id="btnReset" type="button">Volver al borrador</button>
       </div>
       <p class="status" id="status" role="status"></p>
+      <div class="legend">
+        <span><i style="background:var(--wall-ext)"></i>Muro exterior</span>
+        <span><i style="background:var(--wall)"></i>Muro interior</span>
+        <span><i style="background:var(--accent)"></i>Punto de foto</span>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<div class="pano-overlay" id="panoOverlay" hidden>
+  <div class="pano-bar">
+    <div><strong id="panoTitle"></strong><br><span>Arrastre para girar · rueda para acercar</span></div>
+    <button class="btn" id="panoClose" type="button">Cerrar</button>
+  </div>
+  <div id="panoStage">
+    <div class="pano-msg" id="panoMsg" hidden>
+      <p>Esta panorámica solo está en la copia local, porque son fotos privadas del interior de su casa. Abra la app desde su computadora para verla.</p>
     </div>
   </div>
-</aside>
+</div>
 
 <script type="importmap">
-{
-  "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
-    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
-  }
-}
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+} }
 </script>
-<script type="module" src="./src/main.js"></script>
+<script type="module" src="./src/app.js"></script>

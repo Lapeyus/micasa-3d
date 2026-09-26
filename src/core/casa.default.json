@@ -2,7 +2,7 @@
  "version": 1,
  "name": "Casa",
  "units": "m",
- "notes": "Borrador reconstruido desde 28 panorámicas sin planos. x crece hacia la derecha visto desde la calle; z crece hacia el fondo del lote (z=0 es la fachada). Los rectángulos de cuartos son caras interiores de pared. Revisión 2: planta corregida por el usuario en el editor (25 sep 2026). Revisión 3: segunda pasada por las 28 panorámicas (formas en L, ventanas faltantes, empotrados, anexo).",
+ "notes": "Borrador reconstruido desde 28 panorámicas sin planos. x crece hacia la derecha visto desde la calle; z crece hacia el fondo del lote (z=0 es la fachada). Los rectángulos de cuartos son caras interiores de pared. Revisión 2: planta corregida por el usuario en el editor (25 sep 2026). Revisión 3: segunda pasada por las 28 panorámicas (formas en L, ventanas faltantes, empotrados, anexo). Revisión 4: tapia perimetral y fuente frente al ventanal.",
  "defaults": {
   "wallThickness": 0.15,
   "ceiling": 2.55,
@@ -328,9 +328,9 @@
    "id": "jardin_frontal",
    "name": "Jardín del frente",
    "rect": [
-    0,
-    -6,
-    20.35,
+    -0.7250000000000001,
+    -6.125,
+    20.525000000000002,
     -0.15
    ],
    "surface": "zacate"
@@ -351,10 +351,10 @@
    "id": "patio",
    "name": "Patio trasero",
    "rect": [
-    -0.7,
+    -0.7250000000000001,
     10.6,
-    20.4,
-    27
+    20.525000000000002,
+    27.125
    ],
    "surface": "zacate"
   },
@@ -1048,7 +1048,7 @@
    "heading": 0
   }
  ],
- "revision": 3,
+ "revision": 4,
  "fixtures": [
   {
    "id": "coc-mueble-o",
@@ -1456,14 +1456,162 @@
    "front": "S"
   },
   {
+   "id": "porton-cochera",
+   "room": "lote",
+   "kind": "porton_reja",
+   "rect": [
+    -0.65,
+    -6.275,
+    3.35,
+    -6.125
+   ],
+   "front": "S",
+   "height": 2.0
+  },
+  {
+   "id": "verja-frente-1",
+   "room": "lote",
+   "kind": "verja",
+   "rect": [
+    3.35,
+    -6.275,
+    12.95,
+    -6.125
+   ],
+   "front": "S"
+  },
+  {
+   "id": "porton-peatonal",
+   "room": "lote",
+   "kind": "porton_reja",
+   "rect": [
+    12.95,
+    -6.275,
+    14.05,
+    -6.125
+   ],
+   "front": "S",
+   "height": 2.0
+  },
+  {
+   "id": "verja-frente-2",
+   "room": "lote",
+   "kind": "verja",
+   "rect": [
+    14.05,
+    -6.275,
+    20.6,
+    -6.125
+   ],
+   "front": "S"
+  },
+  {
+   "id": "tapia-o-frente",
+   "room": "lote",
+   "kind": "tapia",
+   "rect": [
+    -0.875,
+    -6.2,
+    -0.725,
+    0
+   ],
+   "front": "E",
+   "height": 2.2,
+   "style": "teja"
+  },
+  {
+   "id": "tapia-o-gimnasio",
+   "room": "lote",
+   "kind": "tapia",
+   "rect": [
+    -0.875,
+    0,
+    -0.725,
+    10.6
+   ],
+   "front": "E",
+   "height": 2.4,
+   "style": "liso"
+  },
+  {
+   "id": "tapia-o-patio",
+   "room": "lote",
+   "kind": "tapia",
+   "rect": [
+    -0.875,
+    10.6,
+    -0.725,
+    27.2
+   ],
+   "front": "E",
+   "height": 2.6,
+   "style": "enredadera"
+  },
+  {
+   "id": "tapia-n",
+   "room": "lote",
+   "kind": "tapia",
+   "rect": [
+    -0.8,
+    27.125,
+    20.6,
+    27.275
+   ],
+   "front": "S",
+   "height": 2.6,
+   "style": "enredadera"
+  },
+  {
+   "id": "tapia-e-frente",
+   "room": "lote",
+   "kind": "tapia",
+   "rect": [
+    20.525,
+    -6.2,
+    20.675,
+    0
+   ],
+   "front": "W",
+   "height": 2.2,
+   "style": "teja"
+  },
+  {
+   "id": "tapia-e-casa",
+   "room": "lote",
+   "kind": "tapia",
+   "rect": [
+    20.525,
+    0,
+    20.675,
+    10.6
+   ],
+   "front": "W",
+   "height": 2.4,
+   "style": "liso"
+  },
+  {
+   "id": "tapia-e-patio",
+   "room": "lote",
+   "kind": "tapia",
+   "rect": [
+    20.525,
+    10.6,
+    20.675,
+    27.2
+   ],
+   "front": "W",
+   "height": 2.6,
+   "style": "enredadera"
+  },
+  {
    "id": "fuente",
    "room": "jardin_frontal",
    "kind": "fuente",
    "rect": [
-    13.4,
-    -3.6,
-    14.6,
-    -2.4
+    6.05,
+    -4.5,
+    7.25,
+    -3.3
    ],
    "front": "S"
   }

@@ -7,7 +7,7 @@ import { buildHouse, disposeHouse } from './arch/scene3d.js';
 import { PlanEditor, newOpening } from './arch/plan.js';
 import { PanoViewer } from './arch/pano.js';
 import { validate, bounds, OPENING_KINDS, SIDES, roomRects } from './core/geometry.js';
-import { FIXTURE_KINDS, fixtureInfo } from './core/fixtures.js';
+import { FIXTURE_KINDS, WALL_STYLES, fixtureInfo } from './core/fixtures.js';
 
 const STORE = 'casa-json-v1';
 const $ = (id) => document.getElementById(id);
@@ -249,8 +249,9 @@ function renderInspector() {
         field('Posición x', f.rect[0].toFixed(2), (v) => { const w = f.rect[2] - f.rect[0]; f.rect[0] = v; f.rect[2] = +(v + w).toFixed(3); }),
         field('Posición z', f.rect[1].toFixed(2), (v) => { const d = f.rect[3] - f.rect[1]; f.rect[1] = v; f.rect[3] = +(v + d).toFixed(3); }),
         field('Alto (m)', (f.height ?? info.height).toFixed(2), (v) => { f.height = v; }),
-        field('Cuarto', f.room, (v) => { f.room = v; }, { options: casa.rooms.map((q) => [q.id, q.name]) }),
+        field('Cuarto o área', f.room, (v) => { f.room = v; }, { options: [...casa.rooms, ...(casa.outdoor ?? [])].map((q) => [q.id, q.name]).concat([['lote', 'Lote (perímetro)']]) }),
       ),
+      ...(f.kind === 'tapia' ? [field('Acabado', f.style ?? 'liso', (v) => { f.style = v; }, { options: WALL_STYLES })] : []),
       button('Girar 90°', () => {
         checkpoint();
         const [a, b, c, d] = f.rect;

@@ -29,7 +29,13 @@ export const FIXTURE_KINDS = {
   arbol: { label: 'Árbol', layer: 'exterior', height: 6, depth: 4 },
   mesa_concreto: { label: 'Mesa de concreto con bancas', layer: 'exterior', height: 0.75, depth: 2.2 },
   fuente: { label: 'Fuente', layer: 'exterior', height: 1.6, depth: 1.2 },
+  tapia: { label: 'Tapia', layer: 'exterior', height: 2.4, depth: 0.15 },
+  verja: { label: 'Muro bajo con verja', layer: 'exterior', height: 2.0, depth: 0.2 },
+  porton_reja: { label: 'Portón de reja', layer: 'exterior', height: 2.0, depth: 0.1 },
 };
+
+// Estilos de tapia: 'liso', 'teja' (remate de teja de barro), 'enredadera' (cubierta de hiedra).
+export const WALL_STYLES = [['liso', 'Repello liso'], ['teja', 'Con remate de teja'], ['enredadera', 'Con enredadera']];
 
 export function fixtureInfo(kind) {
   return FIXTURE_KINDS[kind] ?? { label: kind, layer: 'muebles', height: 1, depth: 0.6 };

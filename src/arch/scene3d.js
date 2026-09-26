@@ -56,6 +56,9 @@ function mats() {
     bark: std({ color: 0x4d3a2a, roughness: 1 }),
     leaves: [0x3f7a2c, 0x4f8c34, 0x2f6624].map((c) => std({ color: c, roughness: 0.95 })),
     mosaicTop: std({ map: TX.hydraulic(), roughness: 0.4 }),
+    ivy: std({ color: 0x3d6b2a, roughness: 1 }),
+    ivy2: std({ color: 0x4f7f33, roughness: 1 }),
+    tile: std({ color: 0x9c4a2e, roughness: 0.8 }),
   };
   return M;
 }
@@ -440,6 +443,39 @@ function buildFixture(g, f, info, m) {
       B(cu - W / 2, cu + W / 2, cv - D / 2, cv + D / 2, 0, 0.35, m.white);
       B(cu - 0.12, cu + 0.12, cv - 0.12, cv + 0.12, 0.35, H, m.white);
       B(cu - 0.35, cu + 0.35, cv - 0.35, cv + 0.35, H * 0.6, H * 0.6 + 0.08, m.white);
+      break;
+    }
+    case 'tapia': {
+      B(0, W, 0, D, 0, H, m.exterior);
+      if (f.style === 'teja') B(-0.02, W + 0.02, -0.08, D + 0.08, H, H + 0.08, m.tile);
+      else B(-0.01, W + 0.01, -0.03, D + 0.03, H, H + 0.05, m.exterior);
+      if (f.style === 'enredadera') {
+        // parches de hiedra en ambas caras, de alto irregular
+        let k = 0;
+        for (let u = 0; u < W - 0.05; u += 0.9) {
+          const top = H * (0.55 + ((k * 37) % 40) / 100);
+          const mat = k++ % 2 ? m.ivy : m.ivy2;
+          B(u, Math.min(W, u + 0.95), -0.06, 0, 0, top, mat, { cast: false });
+          B(u, Math.min(W, u + 0.95), D, D + 0.06, 0, top * 0.9, mat, { cast: false });
+        }
+      }
+      break;
+    }
+    case 'verja': {
+      const base = 0.9;
+      B(0, W, 0, D, 0, base, m.exterior);
+      B(-0.01, W + 0.01, -0.02, D + 0.02, base, base + 0.05, m.exterior);
+      const mid = D / 2;
+      for (let u = 0.06; u < W; u += 0.13) B(u - 0.01, u + 0.01, mid - 0.01, mid + 0.01, base, H, m.iron, { cast: false });
+      for (const y of [base + 0.12, H - 0.08]) B(0, W, mid - 0.015, mid + 0.015, y, y + 0.03, m.iron);
+      for (let u = 0; u <= W; u += 2.4) B(Math.max(0, u - 0.04), Math.min(W, u + 0.04), mid - 0.04, mid + 0.04, base, H + 0.1, m.iron);
+      break;
+    }
+    case 'porton_reja': {
+      const mid = D / 2;
+      for (const u of [0, W - 0.06]) B(u, u + 0.06, mid - 0.03, mid + 0.03, 0, H + 0.1, m.iron);
+      for (let u = 0.1; u < W - 0.05; u += 0.11) B(u - 0.01, u + 0.01, mid - 0.01, mid + 0.01, 0.05, H, m.iron, { cast: false });
+      for (const y of [0.05, H / 2, H - 0.06]) B(0, W, mid - 0.02, mid + 0.02, y, y + 0.04, m.iron);
       break;
     }
     default:

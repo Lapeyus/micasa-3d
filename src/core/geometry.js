@@ -46,6 +46,22 @@ function subtract(intervals, [a, b]) {
   return out.filter(([p, q]) => q - p > 0.005);
 }
 
+// Un cuarto puede tener partes extra (forma en L, entrantes): `parts: [[x0,z0,x1,z1], ...]`.
+// Entre partes del mismo cuarto no hay muro.
+export function roomRects(room) {
+  return [room.rect, ...(room.parts ?? [])];
+}
+
+export function cells(casa) {
+  const out = [];
+  for (const r of casa.rooms) roomRects(r).forEach((rect, i) => out.push({ room: r, rect, part: i }));
+  return out;
+}
+
+export function roomArea(room) {
+  return roomRects(room).reduce((a, rc) => a + area(rc), 0);
+}
+
 export function roomHeight(casa, room) {
   return room.ceiling ?? casa.defaults.ceiling;
 }
@@ -57,27 +73,29 @@ export function wallColor(casa, room, side) {
 // Muros como cajas alineadas a los ejes: {x0,x1,z0,z1,y0,y1, room, side, exterior, color}.
 export function deriveWalls(casa) {
   const T = casa.defaults.wallThickness;
-  const rooms = casa.rooms;
   const pieces = [];
 
-  for (const r of rooms) {
+  const all = cells(casa);
+  for (const c of all) {
+    const r = c.room;
     const h = roomHeight(casa, r);
     for (const side of SIDES) {
-      if (r.open?.includes(side)) continue;
-      const s = sideLine(r.rect, side);
+      if (c.part === 0 && r.open?.includes(side)) continue;
+      const s = sideLine(c.rect, side);
       let free = [[s.from, s.to]];
       const shared = [];
-      for (const q of rooms) {
-        if (q === r) continue;
+      for (const q of all) {
+        if (q === c) continue;
         const o = sideLine(q.rect, opposite[side]);
-        if (o.axis !== s.axis) continue;
         const gap = (o.line - s.line) * s.out;
-        if (gap < -EPS || gap > MAX_GAP) continue;
+        const same = q.room === r;
+        if (gap < -EPS || gap > (same ? 0.01 : MAX_GAP)) continue;
         const a = Math.max(s.from, o.from), b = Math.min(s.to, o.to);
         if (b - a < 0.01) continue;
-        const qOpen = q.open?.includes(opposite[side]);
-        shared.push({ a, b, thick: qOpen ? gap : gap / 2 });
         free = subtract(free, [a, b]);
+        if (same) continue; // continuidad dentro del mismo cuarto: sin muro
+        const qOpen = q.part === 0 && q.room.open?.includes(opposite[side]);
+        shared.push({ a, b, thick: qOpen ? gap : gap / 2 });
       }
       const color = wallColor(casa, r, side);
       const push = (a, b, thick, exterior) => {
@@ -113,7 +131,7 @@ export function resolveOpenings(casa) {
     const room = byId[o.room];
     if (!room) continue;
     const kind = OPENING_KINDS[o.kind] ?? OPENING_KINDS.vano;
-    const s = sideLine(room.rect, o.side);
+    const s = sideLine(roomRects(room)[o.part ?? 0] ?? room.rect, o.side);
     const a = s.from + o.offset;
     const b = a + o.width;
     // la repisa solo aplica a ventanas; una puerta siempre llega al piso
@@ -154,13 +172,14 @@ function cutOpening(walls, op) {
 
 // Rectángulo que ocupa toda la casa (para cámara, techo y terreno).
 export function bounds(casa, { outdoor = false } = {}) {
-  const list = outdoor ? [...casa.rooms, ...(casa.outdoor ?? [])] : casa.rooms;
+  const rects = cells(casa).map((c) => c.rect);
+  if (outdoor) for (const o of casa.outdoor ?? []) rects.push(o.rect);
   const b = [Infinity, Infinity, -Infinity, -Infinity];
-  for (const r of list) {
-    b[0] = Math.min(b[0], r.rect[0]);
-    b[1] = Math.min(b[1], r.rect[1]);
-    b[2] = Math.max(b[2], r.rect[2]);
-    b[3] = Math.max(b[3], r.rect[3]);
+  for (const rc of rects) {
+    b[0] = Math.min(b[0], rc[0]);
+    b[1] = Math.min(b[1], rc[1]);
+    b[2] = Math.max(b[2], rc[2]);
+    b[3] = Math.max(b[3], rc[3]);
   }
   return b;
 }
@@ -174,19 +193,23 @@ export function area(rect) {
 export function validate(casa) {
   const issues = [];
   const rs = casa.rooms;
-  for (let i = 0; i < rs.length; i++) {
-    for (let j = i + 1; j < rs.length; j++) {
-      const a = rs[i].rect, b = rs[j].rect;
+  const cs = cells(casa);
+  for (let i = 0; i < cs.length; i++) {
+    for (let j = i + 1; j < cs.length; j++) {
+      const a = cs[i].rect, b = cs[j].rect;
       const ox = Math.min(a[2], b[2]) - Math.max(a[0], b[0]);
       const oz = Math.min(a[3], b[3]) - Math.max(a[1], b[1]);
-      if (ox > 0.01 && oz > 0.01) issues.push(`${rs[i].name} y ${rs[j].name} se traslapan`);
+      if (ox > 0.01 && oz > 0.01) {
+        const same = cs[i].room === cs[j].room;
+        issues.push(same ? `Dos partes de ${cs[i].room.name} se traslapan` : `${cs[i].room.name} y ${cs[j].room.name} se traslapan`);
+      }
     }
   }
   const byId = Object.fromEntries(rs.map((r) => [r.id, r]));
   for (const o of casa.openings) {
     const r = byId[o.room];
     if (!r) { issues.push(`El vano ${o.id} apunta a un cuarto que no existe (${o.room})`); continue; }
-    const s = sideLine(r.rect, o.side);
+    const s = sideLine(roomRects(r)[o.part ?? 0] ?? r.rect, o.side);
     if (o.offset < -EPS || s.from + o.offset + o.width > s.to + EPS) {
       issues.push(`El vano ${o.id} se sale del lado ${o.side} de ${r.name}`);
     }

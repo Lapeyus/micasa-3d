@@ -2,7 +2,7 @@
  "version": 1,
  "name": "Casa",
  "units": "m",
- "notes": "Borrador reconstruido desde 28 panorámicas sin planos. x crece hacia la derecha visto desde la calle; z crece hacia el fondo del lote (z=0 es la fachada). Los rectángulos de cuartos son caras interiores de pared. Revisión 2: planta corregida por el usuario en el editor (25 sep 2026).",
+ "notes": "Borrador reconstruido desde 28 panorámicas sin planos. x crece hacia la derecha visto desde la calle; z crece hacia el fondo del lote (z=0 es la fachada). Los rectángulos de cuartos son caras interiores de pared. Revisión 2: planta corregida por el usuario en el editor (25 sep 2026). Revisión 3: segunda pasada por las 28 panorámicas (formas en L, ventanas faltantes, empotrados, anexo).",
  "defaults": {
   "wallThickness": 0.15,
   "ceiling": 2.55,
@@ -37,7 +37,8 @@
     7.3,
     10.45
    ],
-   "confidence": "baja"
+   "confidence": "baja",
+   "ceilingFinish": "vigas"
   },
   {
    "id": "sala",
@@ -51,7 +52,15 @@
    ],
    "ceiling": 2.7,
    "ceilingFinish": "vigas",
-   "confidence": "media"
+   "confidence": "media",
+   "parts": [
+    [
+     4.95,
+     -1.9,
+     12.4,
+     0
+    ]
+   ]
   },
   {
    "id": "vestibulo",
@@ -103,14 +112,25 @@
     5.35
    ],
    "floor": "parquet",
-   "confidence": "baja"
+   "confidence": "baja",
+   "parts": [
+    [
+     16.45,
+     0.3,
+     17.5,
+     1.5
+    ]
+   ],
+   "wallColors": {
+    "E": "#f4f2ea"
+   }
   },
   {
    "id": "bano_principal",
    "name": "Baño principal",
    "kind": "bano",
    "rect": [
-    16.45,
+    17.65,
     0,
     20.2,
     1.35
@@ -153,7 +173,7 @@
    "rect": [
     9.65,
     14.7,
-    12.0,
+    11.85,
     17.8
    ],
    "confidence": "alta"
@@ -177,7 +197,7 @@
    "name": "Paso al cuarto rosado",
    "kind": "pasillo",
    "rect": [
-    12.15,
+    12.0,
     14.7,
     13.65,
     15.6
@@ -194,10 +214,10 @@
     16.3,
     17.9
    ],
-   "wallColor": "#e6a3c4",
+   "wallColor": "#f0cd3c",
    "wallColors": {
-    "E": "#f0cd3c",
-    "N": "#f0cd3c"
+    "E": "#d9559a",
+    "S": "#d9559a"
    },
    "confidence": "media"
   },
@@ -211,7 +231,11 @@
     16.3,
     14.55
    ],
-   "confidence": "baja"
+   "confidence": "baja",
+   "floor": "parquet",
+   "wallColors": {
+    "N": "#6b4a33"
+   }
   },
   {
    "id": "dorm_ninos",
@@ -223,12 +247,13 @@
     20.2,
     10.45
    ],
-   "wallColor": "#f3f1ea",
+   "wallColor": "#f3ecd8",
    "wallColors": {
-    "W": "#f2c21c",
-    "E": "#8fbf4a"
+    "N": "#8fbf4a",
+    "E": "#f2c21c"
    },
-   "confidence": "baja"
+   "confidence": "baja",
+   "floor": "parquet"
   },
   {
    "id": "oficina",
@@ -248,18 +273,26 @@
    "name": "Cuarto de manualidades",
    "kind": "oficina",
    "rect": [
-    12.4,
-    22.15,
-    15.4,
+    10.0,
+    22.7,
+    12.25,
     25.7
    ],
    "floor": "hidraulico",
-   "wallColor": "#e3ecd6",
-   "confidence": "baja"
+   "wallColor": "#cfe8d4",
+   "confidence": "baja",
+   "parts": [
+    [
+     9.35,
+     24.0,
+     10.0,
+     25.7
+    ]
+   ]
   },
   {
    "id": "bodega",
-   "name": "Bodega de lámina",
+   "name": "Caseta prefabricada",
    "kind": "bodega",
    "rect": [
     17.9,
@@ -271,6 +304,22 @@
    "ceiling": 2.2,
    "ceilingFinish": "blanco",
    "wallColor": "#c9b48a",
+   "confidence": "baja"
+  },
+  {
+   "id": "bodega_lamina",
+   "name": "Bodega de lámina",
+   "kind": "bodega",
+   "rect": [
+    12.4,
+    22.7,
+    14.2,
+    24.6
+   ],
+   "floor": "cemento",
+   "ceiling": 2.2,
+   "ceilingFinish": "blanco",
+   "wallColor": "#b9bdbf",
    "confidence": "baja"
   }
  ],
@@ -325,10 +374,10 @@
    "id": "corredor_anexo",
    "name": "Corredor del anexo",
    "rect": [
-    -0.55,
-    20.3,
-    15.4,
-    21.95
+    3.1,
+    22.7,
+    9.2,
+    25.7
    ],
    "surface": "hidraulico",
    "roof": true
@@ -349,9 +398,9 @@
    "room": "gimnasio",
    "side": "N",
    "kind": "vano",
-   "offset": 0.5,
-   "width": 2.2,
-   "height": 2.2
+   "offset": 0.15,
+   "width": 3.0,
+   "height": 2.3
   },
   {
    "id": "gim-estudio",
@@ -377,8 +426,8 @@
    "room": "estudio",
    "side": "S",
    "kind": "arco",
-   "offset": 0.95,
-   "width": 1.6,
+   "offset": 0.925,
+   "width": 2.0,
    "height": 2.3
   },
   {
@@ -386,8 +435,9 @@
    "room": "sala",
    "side": "S",
    "kind": "ventana",
-   "offset": 1.8,
-   "width": 2.0,
+   "offset": 1.0,
+   "width": 1.4,
+   "part": 1,
    "sill": 0.8,
    "height": 2.2,
    "reja": true
@@ -406,7 +456,7 @@
    "room": "vestibulo",
    "side": "S",
    "kind": "puerta",
-   "offset": 0.5,
+   "offset": 0.9,
    "width": 1.0,
    "height": 2.2
   },
@@ -432,8 +482,8 @@
    "room": "principal",
    "side": "W",
    "kind": "puerta",
-   "offset": 2.75,
-   "width": 0.75
+   "offset": 2.55,
+   "width": 0.7
   },
   {
    "id": "pasillo-bano",
@@ -444,32 +494,12 @@
    "width": 0.8
   },
   {
-   "id": "principal-ventana",
-   "room": "principal",
-   "side": "E",
-   "kind": "ventana",
-   "offset": 1.2,
-   "width": 1.4,
-   "sill": 0.95,
-   "height": 2.1
-  },
-  {
    "id": "bano-principal-puerta",
    "room": "bano_principal",
    "side": "N",
    "kind": "puerta",
-   "offset": 0.8,
-   "width": 0.8
-  },
-  {
-   "id": "bano-principal-ventana",
-   "room": "bano_principal",
-   "side": "E",
-   "kind": "ventana",
-   "offset": 0.35,
-   "width": 0.7,
-   "sill": 1.4,
-   "height": 2.0
+   "offset": 1.15,
+   "width": 0.75
   },
   {
    "id": "tv-estudio",
@@ -485,9 +515,10 @@
    "side": "N",
    "kind": "ventana",
    "offset": 0.9,
-   "width": 0.8,
+   "width": 1.2,
    "sill": 0.9,
-   "height": 2.1
+   "height": 2.1,
+   "reja": true
   },
   {
    "id": "tv-cocina",
@@ -510,18 +541,19 @@
    "room": "dorm_ninos",
    "side": "N",
    "kind": "ventana",
-   "offset": 1.2,
-   "width": 1.2,
-   "sill": 0.9,
-   "height": 2.1
+   "offset": 1.0,
+   "width": 1.85,
+   "sill": 1.0,
+   "height": 2.1,
+   "reja": true
   },
   {
    "id": "cocina-ventana",
    "room": "cocina",
    "side": "W",
    "kind": "ventana",
-   "offset": 0.8,
-   "width": 1.35,
+   "offset": 2.45,
+   "width": 1.3,
    "sill": 0.98,
    "height": 2.2,
    "reja": true
@@ -530,8 +562,8 @@
    "id": "cocina-lavado",
    "room": "cocina",
    "side": "N",
-   "kind": "puerta",
-   "offset": 0.95,
+   "kind": "vano",
+   "offset": 1.25,
    "width": 0.8
   },
   {
@@ -539,34 +571,35 @@
    "room": "lavado",
    "side": "N",
    "kind": "puerta",
-   "offset": 1.1,
-   "width": 0.85
+   "offset": 1.3,
+   "width": 0.8
   },
   {
    "id": "lavado-ventana",
    "room": "lavado",
    "side": "N",
    "kind": "ventana",
-   "offset": 0.05,
+   "offset": 0.1,
    "width": 0.9,
-   "sill": 1.05,
-   "height": 2.0
+   "sill": 1.3,
+   "height": 2.1,
+   "reja": true
   },
   {
    "id": "lavado-paso",
    "room": "lavado",
    "side": "E",
-   "kind": "puerta",
+   "kind": "vano",
    "offset": 0.05,
-   "width": 0.75
+   "width": 0.8
   },
   {
    "id": "lavado-bano",
    "room": "lavado",
    "side": "E",
    "kind": "puerta",
-   "offset": 1.3,
-   "width": 0.7
+   "offset": 1.7,
+   "width": 0.75
   },
   {
    "id": "paso-rosado",
@@ -581,18 +614,18 @@
    "room": "bano_servicio",
    "side": "N",
    "kind": "ventana",
-   "offset": 0.4,
-   "width": 0.6,
-   "sill": 1.5,
-   "height": 2.0
+   "offset": 0.5,
+   "width": 0.45,
+   "sill": 1.8,
+   "height": 2.2
   },
   {
    "id": "rosado-ventana",
    "room": "cuarto_rosado",
    "side": "E",
    "kind": "ventana",
-   "offset": 1.0,
-   "width": 1.1,
+   "offset": 0.15,
+   "width": 0.9,
    "sill": 1.0,
    "height": 2.1,
    "reja": true
@@ -602,19 +635,11 @@
    "room": "dorm_verde",
    "side": "E",
    "kind": "ventana",
-   "offset": 0.85,
+   "offset": 0.4,
    "width": 1.5,
    "sill": 0.9,
    "height": 2.1,
    "reja": true
-  },
-  {
-   "id": "verde-puerta",
-   "room": "dorm_verde",
-   "side": "S",
-   "kind": "puerta",
-   "offset": 2.3,
-   "width": 0.8
   },
   {
    "id": "oficina-puerta",
@@ -625,40 +650,92 @@
    "width": 0.85
   },
   {
-   "id": "oficina-ventana",
-   "room": "oficina",
-   "side": "W",
-   "kind": "ventana",
-   "offset": 1.0,
-   "width": 1.2,
-   "sill": 0.9,
-   "height": 2.0
-  },
-  {
-   "id": "taller-puerta",
-   "room": "taller",
-   "side": "W",
-   "kind": "puerta",
-   "offset": 2.45,
-   "width": 0.8
-  },
-  {
-   "id": "taller-ventana",
-   "room": "taller",
-   "side": "S",
-   "kind": "ventana",
-   "offset": 1.8,
-   "width": 0.9,
-   "sill": 0.9,
-   "height": 2.0
-  },
-  {
    "id": "bodega-puerta",
    "room": "bodega",
    "side": "W",
    "kind": "puerta",
    "offset": 0.7,
    "width": 0.9
+  },
+  {
+   "id": "sala-ventana-arco",
+   "room": "sala",
+   "side": "S",
+   "kind": "ventana",
+   "offset": 0.25,
+   "width": 0.6,
+   "sill": 0.9,
+   "height": 2.3,
+   "reja": true,
+   "arch": true
+  },
+  {
+   "id": "principal-ventana",
+   "room": "principal",
+   "side": "S",
+   "kind": "ventana",
+   "offset": 0.1,
+   "width": 0.85,
+   "part": 1,
+   "sill": 0.75,
+   "height": 2.15,
+   "reja": true
+  },
+  {
+   "id": "verde-puerta",
+   "room": "dorm_verde",
+   "side": "S",
+   "kind": "puerta",
+   "offset": 0.05,
+   "width": 0.8
+  },
+  {
+   "id": "lavado-ventana-o",
+   "room": "lavado",
+   "side": "W",
+   "kind": "ventana",
+   "offset": 1.2,
+   "width": 1.0,
+   "sill": 1.05,
+   "height": 2.1,
+   "reja": true
+  },
+  {
+   "id": "taller-puerta",
+   "room": "taller",
+   "side": "W",
+   "kind": "puerta",
+   "offset": 0.6,
+   "width": 0.8,
+   "part": 1
+  },
+  {
+   "id": "taller-ventana",
+   "room": "taller",
+   "side": "S",
+   "kind": "ventana",
+   "offset": 0.2,
+   "width": 1.0,
+   "sill": 0.9,
+   "height": 2.0
+  },
+  {
+   "id": "oficina-ventana",
+   "room": "oficina",
+   "side": "S",
+   "kind": "ventana",
+   "offset": 2.35,
+   "width": 1.0,
+   "sill": 0.9,
+   "height": 2.0
+  },
+  {
+   "id": "bodega-lamina-puerta",
+   "room": "bodega_lamina",
+   "side": "S",
+   "kind": "puerta",
+   "offset": 0.5,
+   "width": 0.8
   }
  ],
  "panoramas": [
@@ -668,8 +745,8 @@
    "name": "Patio: jardín y mesas",
    "area": "patio",
    "at": [
-    6.5,
-    18.8
+    6.0,
+    22.3
    ],
    "heading": 0
   },
@@ -701,8 +778,8 @@
    "name": "Lavado (vuelta completa)",
    "area": "lavado",
    "at": [
-    11.12,
-    16.75
+    10.9,
+    16.4
    ],
    "heading": 0
   },
@@ -723,8 +800,8 @@
    "name": "Lavado hacia la cocina",
    "area": "lavado",
    "at": [
-    10.62,
-    15.65
+    11.35,
+    15.0
    ],
    "heading": 0
   },
@@ -822,8 +899,8 @@
    "name": "Dormitorio principal (otro punto)",
    "area": "principal",
    "at": [
-    17.57,
-    4.02
+    19.4,
+    2.3
    ],
    "heading": 0
   },
@@ -899,8 +976,8 @@
    "name": "Fachada",
    "area": "jardin_frontal",
    "at": [
-    8.0,
-    -4.5
+    2.5,
+    -4.0
    ],
    "heading": 0
   },
@@ -922,7 +999,7 @@
    "area": "patio",
    "at": [
     8.0,
-    20.5
+    16.5
    ],
    "heading": 0
   },
@@ -943,8 +1020,8 @@
    "name": "Corredor del anexo",
    "area": "corredor_anexo",
    "at": [
-    7.0,
-    21.1
+    6.2,
+    24.0
    ],
    "heading": 0
   },
@@ -954,8 +1031,8 @@
    "name": "Cuarto de manualidades",
    "area": "taller",
    "at": [
-    13.9,
-    23.92
+    11.1,
+    24.3
    ],
    "heading": 0
   },
@@ -966,10 +1043,429 @@
    "area": "oficina",
    "at": [
     1.2,
-    23.85
+    23.9
    ],
    "heading": 0
   }
  ],
- "revision": 2
+ "revision": 3,
+ "fixtures": [
+  {
+   "id": "coc-mueble-o",
+   "room": "cocina",
+   "kind": "mueble",
+   "rect": [
+    9.7,
+    10.55,
+    10.3,
+    14.55
+   ],
+   "front": "E"
+  },
+  {
+   "id": "coc-mueble-n",
+   "room": "cocina",
+   "kind": "mueble",
+   "rect": [
+    10.3,
+    13.95,
+    10.9,
+    14.55
+   ],
+   "front": "S"
+  },
+  {
+   "id": "coc-aereo-o",
+   "room": "cocina",
+   "kind": "aereo",
+   "rect": [
+    9.7,
+    10.9,
+    10.03,
+    12.9
+   ],
+   "front": "E"
+  },
+  {
+   "id": "coc-aereo-n",
+   "room": "cocina",
+   "kind": "aereo",
+   "rect": [
+    10.0,
+    14.22,
+    10.95,
+    14.55
+   ],
+   "front": "S"
+  },
+  {
+   "id": "coc-alacena",
+   "room": "cocina",
+   "kind": "alacena",
+   "rect": [
+    12.25,
+    14.05,
+    12.85,
+    14.55
+   ],
+   "front": "S"
+  },
+  {
+   "id": "coc-cocina",
+   "room": "cocina",
+   "kind": "cocina",
+   "rect": [
+    12.17,
+    13.3,
+    12.85,
+    14.05
+   ],
+   "front": "W"
+  },
+  {
+   "id": "coc-refri",
+   "room": "cocina",
+   "kind": "refri",
+   "rect": [
+    12.13,
+    10.6,
+    12.85,
+    11.32
+   ],
+   "front": "W"
+  },
+  {
+   "id": "lav-mueble",
+   "room": "lavado",
+   "kind": "mueble",
+   "rect": [
+    9.65,
+    14.7,
+    10.85,
+    15.25
+   ],
+   "front": "N",
+   "height": 0.95
+  },
+  {
+   "id": "lav-repisas",
+   "room": "lavado",
+   "kind": "repisa",
+   "rect": [
+    9.65,
+    14.7,
+    10.85,
+    14.95
+   ],
+   "front": "N",
+   "y0": 1.42
+  },
+  {
+   "id": "lav-aereo",
+   "room": "lavado",
+   "kind": "aereo",
+   "rect": [
+    11.52,
+    14.7,
+    11.85,
+    15.3
+   ],
+   "front": "W",
+   "y0": 1.7,
+   "height": 0.6
+  },
+  {
+   "id": "lav-secadora",
+   "room": "lavado",
+   "kind": "lavadora",
+   "rect": [
+    9.65,
+    15.9,
+    10.33,
+    16.55
+   ],
+   "front": "E"
+  },
+  {
+   "id": "lav-lavadora",
+   "room": "lavado",
+   "kind": "lavadora",
+   "rect": [
+    9.65,
+    17.1,
+    10.33,
+    17.8
+   ],
+   "front": "E"
+  },
+  {
+   "id": "bs-ducha",
+   "room": "bano_servicio",
+   "kind": "ducha",
+   "rect": [
+    12.15,
+    17.0,
+    13.65,
+    17.85
+   ],
+   "front": "S"
+  },
+  {
+   "id": "bs-lavatorio",
+   "room": "bano_servicio",
+   "kind": "lavatorio",
+   "rect": [
+    13.2,
+    16.2,
+    13.65,
+    16.75
+   ],
+   "front": "W"
+  },
+  {
+   "id": "bs-inodoro",
+   "room": "bano_servicio",
+   "kind": "inodoro",
+   "rect": [
+    12.55,
+    15.75,
+    13.15,
+    16.45
+   ],
+   "front": "N"
+  },
+  {
+   "id": "ros-closet",
+   "room": "cuarto_rosado",
+   "kind": "closet",
+   "rect": [
+    14.3,
+    14.7,
+    15.1,
+    15.3
+   ],
+   "front": "N"
+  },
+  {
+   "id": "verde-closet",
+   "room": "dorm_verde",
+   "kind": "closet",
+   "rect": [
+    14.7,
+    13.95,
+    16.3,
+    14.55
+   ],
+   "front": "S"
+  },
+  {
+   "id": "pri-closet",
+   "room": "principal",
+   "kind": "closet",
+   "rect": [
+    16.55,
+    4.75,
+    19.1,
+    5.35
+   ],
+   "front": "S"
+  },
+  {
+   "id": "pri-repisas",
+   "room": "principal",
+   "kind": "librero",
+   "rect": [
+    19.1,
+    4.75,
+    20.2,
+    5.35
+   ],
+   "front": "S"
+  },
+  {
+   "id": "pri-cama",
+   "room": "principal",
+   "kind": "cama",
+   "rect": [
+    17.9,
+    2.9,
+    19.45,
+    4.95
+   ],
+   "front": "W",
+   "height": 0.55
+  },
+  {
+   "id": "bp-ducha",
+   "room": "bano_principal",
+   "kind": "ducha",
+   "rect": [
+    19.35,
+    0,
+    20.2,
+    1.35
+   ],
+   "front": "W"
+  },
+  {
+   "id": "bp-inodoro",
+   "room": "bano_principal",
+   "kind": "inodoro",
+   "rect": [
+    18.65,
+    0,
+    19.25,
+    0.7
+   ],
+   "front": "N"
+  },
+  {
+   "id": "bp-lavatorio",
+   "room": "bano_principal",
+   "kind": "lavatorio",
+   "rect": [
+    17.85,
+    0,
+    18.45,
+    0.45
+   ],
+   "front": "N"
+  },
+  {
+   "id": "bpa-ducha",
+   "room": "bano_pasillo",
+   "kind": "ducha",
+   "rect": [
+    14.7,
+    0,
+    16.3,
+    1.0
+   ],
+   "front": "N"
+  },
+  {
+   "id": "bpa-inodoro",
+   "room": "bano_pasillo",
+   "kind": "inodoro",
+   "rect": [
+    15.6,
+    1.6,
+    16.3,
+    2.2
+   ],
+   "front": "W"
+  },
+  {
+   "id": "bpa-lavatorio",
+   "room": "bano_pasillo",
+   "kind": "lavatorio",
+   "rect": [
+    15.85,
+    2.5,
+    16.3,
+    3.1
+   ],
+   "front": "W"
+  },
+  {
+   "id": "nin-closet",
+   "room": "dorm_ninos",
+   "kind": "librero",
+   "rect": [
+    16.45,
+    8.2,
+    17.0,
+    10.2
+   ],
+   "front": "E",
+   "height": 2.1
+  },
+  {
+   "id": "pila",
+   "room": "pila",
+   "kind": "pila",
+   "rect": [
+    10.4,
+    19.35,
+    11.6,
+    19.95
+   ],
+   "front": "S"
+  },
+  {
+   "id": "pila-muro",
+   "room": "pila",
+   "kind": "muro",
+   "rect": [
+    11.8,
+    19.8,
+    13.3,
+    19.95
+   ],
+   "front": "S"
+  },
+  {
+   "id": "arbol-grande",
+   "room": "patio",
+   "kind": "arbol",
+   "rect": [
+    -0.5,
+    17,
+    3.5,
+    21
+   ],
+   "front": "S",
+   "height": 8
+  },
+  {
+   "id": "arbol-troncos",
+   "room": "patio",
+   "kind": "arbol",
+   "rect": [
+    3.5,
+    14,
+    6.5,
+    17
+   ],
+   "front": "S",
+   "height": 6
+  },
+  {
+   "id": "limonero",
+   "room": "patio",
+   "kind": "arbol",
+   "rect": [
+    6.7,
+    13.7,
+    8.3,
+    15.3
+   ],
+   "front": "S",
+   "height": 4
+  },
+  {
+   "id": "mesa-patio",
+   "room": "patio",
+   "kind": "mesa_concreto",
+   "rect": [
+    1.4,
+    14.9,
+    3.6,
+    17.1
+   ],
+   "front": "S"
+  },
+  {
+   "id": "fuente",
+   "room": "jardin_frontal",
+   "kind": "fuente",
+   "rect": [
+    13.4,
+    -3.6,
+    14.6,
+    -2.4
+   ],
+   "front": "S"
+  }
+ ]
 }

@@ -1,7 +1,8 @@
 // Editor de planta en SVG. Trabaja directamente sobre casa.json:
 // arrastrar un cuarto lo mueve, arrastrar un borde lo redimensiona (ajuste a 5 cm),
 // los vanos viajan con su cuarto porque se guardan relativos a su lado.
-import { deriveWalls, sideLine, area, OPENING_KINDS } from '../core/geometry.js';
+import { deriveWalls, sideLine, roomRects, roomArea, OPENING_KINDS } from '../core/geometry.js';
+import { fixtureInfo } from '../core/fixtures.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 const SNAP = 0.05;
@@ -95,7 +96,16 @@ export class PlanEditor {
         const isOut = kind === 'outdoor' || t.dataset.area === 'outdoor';
         const room = (isOut ? this.casa.outdoor : this.casa.rooms).find((r) => r.id === id);
         this.select({ type: isOut ? 'outdoor' : 'room', id });
-        this.drag = { mode: kind === 'edge' ? 'edge' : 'move', side: t.dataset.side, room, start: p, rect: [...room.rect], moved: false };
+        const carry = isOut ? [] : [
+          ...(room.parts ?? []).map((rc, i) => ({ obj: room.parts, key: i, rect: [...rc] })),
+          ...(this.casa.fixtures ?? []).filter((f) => f.room === room.id).map((f) => ({ obj: f, key: 'rect', rect: [...f.rect] })),
+        ];
+        const pins = isOut ? [] : (this.casa.panoramas ?? []).filter((q) => q.area === room.id).map((q) => ({ q, at: [...q.at] }));
+        this.drag = { mode: kind === 'edge' ? 'edge' : 'move', side: t.dataset.side, room, start: p, rect: [...room.rect], carry, pins, moved: false };
+      } else if (kind === 'fixture') {
+        const f = this.casa.fixtures.find((q) => q.id === id);
+        this.select({ type: 'fixture', id });
+        this.drag = { mode: 'fixture', f, start: p, rect: [...f.rect], moved: false };
       } else if (kind === 'opening') {
         this.select({ type: 'opening', id });
         const op = this.casa.openings.find((o) => o.id === id);
@@ -125,6 +135,13 @@ export class PlanEditor {
         const [x0, z0, x1, z1] = d.rect;
         const sx = snap(x0 + dx) - x0, sz = snap(z0 + dz) - z0;
         d.room.rect = [x0 + sx, z0 + sz, x1 + sx, z1 + sz].map(fix);
+        // las partes, empotrados y puntos de foto del cuarto viajan con él
+        for (const c of d.carry) c.obj[c.key] = [c.rect[0] + sx, c.rect[1] + sz, c.rect[2] + sx, c.rect[3] + sz].map(fix);
+        for (const pn of d.pins) pn.q.at = [fix(pn.at[0] + sx), fix(pn.at[1] + sz)];
+      } else if (d.mode === 'fixture') {
+        const [x0, z0, x1, z1] = d.rect;
+        const sx = snap(x0 + dx) - x0, sz = snap(z0 + dz) - z0;
+        d.f.rect = [x0 + sx, z0 + sz, x1 + sx, z1 + sz].map(fix);
       } else if (d.mode === 'edge') {
         const r = [...d.rect];
         if (d.side === 'W') r[0] = Math.min(snap(r[0] + dx), r[2] - 0.5);
@@ -134,7 +151,7 @@ export class PlanEditor {
         d.room.rect = r.map(fix);
       } else if (d.mode === 'opening') {
         const room = this.casa.rooms.find((r) => r.id === d.op.room);
-        const s2 = sideLine(room.rect, d.op.side);
+        const s2 = sideLine(roomRects(room)[d.op.part ?? 0] ?? room.rect, d.op.side);
         const delta = s2.axis === 'x' ? dx : dz;
         d.op.offset = fix(Math.min(Math.max(snap(d.offset + delta), 0), s2.to - s2.from - d.op.width));
       } else if (d.mode === 'pano') {
@@ -196,8 +213,7 @@ export class PlanEditor {
     }
 
     const rooms = el('g', {}, s);
-    for (const r of this.casa.rooms) {
-      const [x0, z0, x1, z1] = r.rect;
+    for (const r of this.casa.rooms) for (const [x0, z0, x1, z1] of roomRects(r)) {
       const selected = this.sel?.type === 'room' && this.sel.id === r.id;
       el('rect', {
         x: x0, y: Y(z1), width: x1 - x0, height: z1 - z0,
@@ -251,6 +267,27 @@ export class PlanEditor {
       }
     }
 
+    // empotrados y muebles
+    const fg = el('g', { class: 'fixtures' }, s);
+    for (const f of this.casa.fixtures ?? []) {
+      const [x0, z0, x1, z1] = f.rect;
+      const info = fixtureInfo(f.kind);
+      const selected = this.sel?.type === 'fixture' && this.sel.id === f.id;
+      const g = el('g', { class: `fx fx-${info.layer}${selected ? ' sel' : ''}`, 'data-kind': 'fixture', 'data-id': f.id }, fg);
+      if (f.kind === 'arbol') {
+        el('circle', { cx: (x0 + x1) / 2, cy: Y((z0 + z1) / 2), r: Math.min(x1 - x0, z1 - z0) / 2, class: 'tree' }, g);
+        el('title', {}, g).textContent = info.label;
+        continue;
+      }
+      el('rect', { x: x0, y: Y(z1), width: x1 - x0, height: z1 - z0 }, g);
+      // marca del frente
+      const fr = f.front ?? 'S';
+      const [ax, ay, bx, by] = fr === 'S' ? [x0, Y(z0), x1, Y(z0)] : fr === 'N' ? [x0, Y(z1), x1, Y(z1)] : fr === 'W' ? [x0, Y(z0), x0, Y(z1)] : [x1, Y(z0), x1, Y(z1)];
+      el('line', { x1: ax, y1: ay, x2: bx, y2: by, class: 'front' }, g);
+      const t = el('title', {}, g);
+      t.textContent = info.label;
+    }
+
     // rótulos
     const labels = el('g', { class: 'labels' }, s);
     for (const r of this.casa.rooms) {
@@ -260,7 +297,7 @@ export class PlanEditor {
       const t = el('text', { x: (x0 + x1) / 2, y: Y((z0 + z1) / 2) - fs * 0.2, 'font-size': fs, class: 'rname' }, labels);
       t.textContent = r.name;
       const t2 = el('text', { x: (x0 + x1) / 2, y: Y((z0 + z1) / 2) + fs * 1.1, 'font-size': fs * 0.85, class: 'rdim' }, labels);
-      t2.textContent = `${w.toFixed(2)} × ${d.toFixed(2)} m · ${area(r.rect).toFixed(1)} m²`;
+      t2.textContent = `${w.toFixed(2)} × ${d.toFixed(2)} m${r.parts?.length ? ' + partes' : ''} · ${roomArea(r).toFixed(1)} m²`;
     }
 
     // asas para redimensionar el cuarto seleccionado

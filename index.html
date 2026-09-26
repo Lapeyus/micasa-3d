@@ -11,7 +11,7 @@
     --plan-bg: #f4f2ea; --grid: rgba(60, 50, 40, 0.07); --wall: #2b2520; --wall-ext: #16120f;
     --k-cocina: #f3d9b8; --k-lavado: #dfe6ef; --k-bano: #d4e8ec; --k-dorm: #efe0ea; --k-sala: #f6e7c8;
     --k-estudio: #e4ecd6; --k-gim: #e1e1ea; --k-pasillo: #ecebe4; --k-bodega: #e2d6bf;
-    --grass: #cfe0b8; --paving: #e8d7c4; --tile: #eadfca;
+    --grass: #cfe0b8; --paving: #e8d7c4; --tile: #eadfca; --fx: #8a6a52; --fx-mueble: #b9ad9c;
     --display: 'Bricolage Grotesque', 'Avenir Next', 'Segoe UI', system-ui, sans-serif;
     --body: 'Instrument Sans', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
     --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
@@ -24,7 +24,7 @@
       --plan-bg: #1a1714; --grid: rgba(255, 240, 220, 0.06); --wall: #e8e0d2; --wall-ext: #fff7ea;
       --k-cocina: #4a3a26; --k-lavado: #2c3440; --k-bano: #26393d; --k-dorm: #3d2c37; --k-sala: #463a22;
       --k-estudio: #2f3a26; --k-gim: #2e2e38; --k-pasillo: #2e2b26; --k-bodega: #3a3223;
-      --grass: #26331d; --paving: #3a2f25; --tile: #362e24;
+      --grass: #26331d; --paving: #3a2f25; --tile: #362e24; --fx: #7a5a44; --fx-mueble: #5a5248;
     }
   }
   :root[data-theme="dark"] {
@@ -34,7 +34,7 @@
     --plan-bg: #1a1714; --grid: rgba(255, 240, 220, 0.06); --wall: #e8e0d2; --wall-ext: #fff7ea;
     --k-cocina: #4a3a26; --k-lavado: #2c3440; --k-bano: #26393d; --k-dorm: #3d2c37; --k-sala: #463a22;
     --k-estudio: #2f3a26; --k-gim: #2e2e38; --k-pasillo: #2e2b26; --k-bodega: #3a3223;
-    --grass: #26331d; --paving: #3a2f25; --tile: #362e24;
+    --grass: #26331d; --paving: #3a2f25; --tile: #362e24; --fx: #7a5a44; --fx-mueble: #5a5248;
   }
   [hidden] { display: none !important; }
   html, body { height: 100%; }
@@ -80,6 +80,13 @@
   #plan .op .leaf { stroke: var(--wall); stroke-width: calc(var(--px) * 1.5px); }
   #plan .op .swing { fill: none; stroke: var(--muted); stroke-width: calc(var(--px) * 1px); stroke-dasharray: calc(var(--px) * 3px) calc(var(--px) * 3px); }
   #plan .op.sel .gap, #plan .op.sel .win { fill: var(--accent); }
+  #plan .fx rect { fill: var(--fx); fill-opacity: 0.55; stroke: var(--wall); stroke-width: calc(var(--px) * 1px); cursor: move; }
+  #plan .fx-muebles rect { fill: var(--fx-mueble); stroke-dasharray: calc(var(--px) * 3px) calc(var(--px) * 2px); }
+  #plan .fx-exterior rect { fill: var(--fx-mueble); stroke-dasharray: none; }
+  #plan .fx .tree { fill: #3f7a2c; fill-opacity: 0.35; stroke: #3f7a2c; stroke-width: calc(var(--px) * 1.5px); cursor: move; }
+  #plan .fx.sel .tree { stroke: var(--accent); }
+  #plan .fx .front { stroke: var(--accent); stroke-width: calc(var(--px) * 2.5px); pointer-events: none; }
+  #plan .fx.sel rect { stroke: var(--accent); stroke-width: calc(var(--px) * 2.5px); fill-opacity: 0.8; }
   #plan .labels text { text-anchor: middle; font-family: var(--body); pointer-events: none; fill: var(--ink); }
   #plan .labels .rname { font-weight: 600; }
   #plan .labels .rdim { font-family: var(--mono); fill: var(--muted); font-variant-numeric: tabular-nums; }
@@ -204,6 +211,8 @@
         <button class="btn" id="t3Outdoor" type="button" aria-pressed="true">Patio y exteriores</button>
         <button class="btn" id="t3Markers" type="button" aria-pressed="true">Puntos de foto</button>
         <button class="btn" id="t3Labels" type="button" aria-pressed="true">Nombres</button>
+        <button class="btn" id="t3Built" type="button" aria-pressed="true">Empotrados</button>
+        <button class="btn" id="t3Furn" type="button" aria-pressed="true">Muebles</button>
       </div>
       <p class="note">Toque una esfera naranja para abrir la panorámica tomada en ese punto.</p>
     </div>

@@ -3,7 +3,8 @@
 // llamada a buildHouse() produce un grupo nuevo a partir de casa.json.
 import * as THREE from 'three';
 import * as TX from '../shared/textures.js';
-import { deriveWalls, roomHeight, bounds } from '../core/geometry.js';
+import { deriveWalls, roomHeight, bounds, roomRects } from '../core/geometry.js';
+import { fixtureInfo } from '../core/fixtures.js';
 
 let M = null;
 const wallMats = new Map();
@@ -37,6 +38,24 @@ function mats() {
     zinc: std({ map: TX.corrugated(), roughness: 0.45, metalness: 0.3, side: THREE.DoubleSide }),
     marker: std({ color: 0xe27b56, emissive: 0x7a2a10, emissiveIntensity: 0.6, roughness: 0.4 }),
     markerRing: new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.85 }),
+    granite: std({ map: TX.granite(), roughness: 0.35 }),
+    cabinet: std({ map: TX.woodGrain({ base: [88, 36, 22], seed: 3 }), roughness: 0.5 }),
+    louver: std({ map: TX.woodGrain({ base: [62, 28, 16], seed: 9 }), roughness: 0.45 }),
+    lightWood: std({ map: TX.woodGrain({ base: [150, 104, 60], seed: 15 }), roughness: 0.6 }),
+    white: std({ color: 0xf2f1ec, roughness: 0.4 }),
+    porcelain: std({ color: 0xf7f7f4, roughness: 0.15 }),
+    stainless: std({ color: 0xc8cacb, metalness: 0.85, roughness: 0.3 }),
+    black: std({ color: 0x151516, roughness: 0.25 }),
+    concrete: std({ color: 0xb9b5ab, roughness: 0.95 }),
+    mattress: std({ color: 0xe9e4d8, roughness: 0.9 }),
+    fabric: std({ color: 0x5b6068, roughness: 0.95 }),
+    fabricTeal: std({ color: 0x2f8f8f, roughness: 0.95 }),
+    tray: std({ color: 0xe9ecea, roughness: 0.3 }),
+    books: [0x8a2b2b, 0x2b4a8a, 0xd9b84a, 0x3f7a4f, 0xe8e2d0, 0x5a3a6a].map((c) => std({ color: c, roughness: 0.8 })),
+    screen: std({ color: 0x0e1014, roughness: 0.2, emissive: 0x141b24, emissiveIntensity: 0.5 }),
+    bark: std({ color: 0x4d3a2a, roughness: 1 }),
+    leaves: [0x3f7a2c, 0x4f8c34, 0x2f6624].map((c) => std({ color: c, roughness: 0.95 })),
+    mosaicTop: std({ map: TX.hydraulic(), roughness: 0.4 }),
   };
   return M;
 }
@@ -90,7 +109,7 @@ export function buildHouse(casa) {
   const root = new THREE.Group();
   root.name = 'casa';
   const layers = {};
-  for (const k of ['floors', 'walls', 'openings', 'ceilings', 'outdoor', 'markers']) {
+  for (const k of ['floors', 'walls', 'openings', 'ceilings', 'outdoor', 'markers', 'empotrados', 'muebles', 'exterior']) {
     layers[k] = new THREE.Group();
     layers[k].name = k;
     root.add(layers[k]);
@@ -99,8 +118,7 @@ export function buildHouse(casa) {
   const colliders = [];
 
   // Pisos y cielos por cuarto
-  for (const r of casa.rooms) {
-    const [x0, z0, x1, z1] = r.rect;
+  for (const r of casa.rooms) for (const [x0, z0, x1, z1] of roomRects(r)) {
     const h = roomHeight(casa, r);
     const floor = m.floors[r.floor ?? casa.defaults.floor] ?? m.floors.provenzal;
     const f = box(layers.floors, x0, x1, -0.05, 0, z0, z1, floor, { cast: false });
@@ -123,6 +141,15 @@ export function buildHouse(casa) {
     const mesh = box(layers.walls, w.x0, w.x1, w.y0, w.y1, w.z0, w.z1, wallFaces(w));
     mesh.userData = { room: w.room, side: w.side, wall: true };
     colliders.push([w.x0, w.z0, w.x1, w.z1, w.y0]);
+  }
+
+  // Empotrados y muebles
+  for (const f of casa.fixtures ?? []) {
+    const info = fixtureInfo(f.kind);
+    const g = new THREE.Group();
+    g.userData = { fixture: f.id, name: info.label };
+    buildFixture(g, f, info, m);
+    layers[info.layer].add(g);
   }
 
   // Vanos: marcos, hojas y ventanas
@@ -249,6 +276,174 @@ function buildOpening(parent, op, m) {
     pivot.rotation.y = base + swing;
     pivot.userData = { door: op.id, closed: base, open: base + swing };
     parent.add(pivot);
+  }
+}
+
+// Marco local de un elemento: u a lo largo del frente, v hacia adentro desde el frente.
+function localFrame(f) {
+  const [x0, z0, x1, z1] = f.rect;
+  const front = f.front ?? 'S';
+  const W = front === 'S' || front === 'N' ? x1 - x0 : z1 - z0;
+  const D = front === 'S' || front === 'N' ? z1 - z0 : x1 - x0;
+  const rect = (u0, u1, v0, v1) => {
+    switch (front) {
+      case 'S': return [x0 + u0, z0 + v0, x0 + u1, z0 + v1];
+      case 'N': return [x1 - u1, z1 - v1, x1 - u0, z1 - v0];
+      case 'W': return [x0 + v0, z1 - u1, x0 + v1, z1 - u0];
+      default: return [x1 - v1, z0 + u0, x1 - v0, z0 + u1];
+    }
+  };
+  return { W, D, rect };
+}
+
+function buildFixture(g, f, info, m) {
+  const { W, D, rect } = localFrame(f);
+  const H = f.height ?? info.height;
+  const Y0 = f.y0 ?? info.y0 ?? 0;
+  const B = (u0, u1, v0, v1, y0, y1, mat, opts) => {
+    const [a, b, c, d] = rect(u0, u1, v0, v1);
+    return box(g, a, c, Y0 + y0, Y0 + y1, b, d, mat, opts);
+  };
+  const doors = (n, y0, y1, mat, louver = false) => {
+    for (let i = 0; i < n; i++) {
+      const u0 = (W * i) / n + 0.005, u1 = (W * (i + 1)) / n - 0.005;
+      B(u0, u1, -0.02, 0, y0, y1, mat);
+      if (louver) for (let y = y0 + 0.08; y < y1 - 0.05; y += 0.055) B(u0 + 0.04, u1 - 0.04, -0.028, -0.02, y, y + 0.02, m.louver, { cast: false });
+    }
+  };
+  const n = Math.max(1, Math.round(W / 0.5));
+  switch (f.kind) {
+    case 'closet':
+      B(0, W, 0, D, 0, H, m.louver);
+      doors(n, 0.02, H - 0.02, m.louver, true);
+      break;
+    case 'alacena':
+      B(0, W, 0, D, 0, H, m.white);
+      for (let y = 0.4; y < H - 0.2; y += 0.4) B(0.02, W - 0.02, 0.02, D - 0.02, y, y + 0.02, m.stainless, { cast: false });
+      break;
+    case 'mueble':
+      B(0, W, 0.06, D, 0.1, H - 0.04, m.cabinet);
+      B(0, W, 0.1, D, 0, 0.1, m.black);
+      B(0, W, -0.02, D, H - 0.04, H, m.granite);
+      doors(n, 0.12, H - 0.08, m.cabinet);
+      break;
+    case 'aereo':
+      B(0, W, 0, D, 0, H, m.cabinet);
+      doors(n, 0.01, H - 0.01, m.cabinet);
+      break;
+    case 'repisa':
+      for (const y of [0, 0.36]) B(0, W, 0, D, y, y + 0.025, m.lightWood);
+      break;
+    case 'ducha': {
+      B(0, W, 0, D, 0, 0.06, m.tray);
+      const gl = B(0, W, 0, 0.01, 0.06, H, m.glassPane ?? (m.glassPane = new THREE.MeshPhysicalMaterial({ color: 0xcfe3e6, roughness: 0.1, transparent: true, opacity: 0.35, depthWrite: false })), { cast: false });
+      gl.renderOrder = 2;
+      B(0, 0.03, 0, 0.03, 0.06, H, m.stainless);
+      B(W - 0.03, W, 0, 0.03, 0.06, H, m.stainless);
+      break;
+    }
+    case 'inodoro':
+      B(W / 2 - 0.19, W / 2 + 0.19, 0.2, D, 0, 0.4, m.porcelain);
+      B(W / 2 - 0.2, W / 2 + 0.2, D - 0.2, D, 0.4, H, m.porcelain);
+      break;
+    case 'lavatorio':
+      B(W / 2 - 0.1, W / 2 + 0.1, D - 0.25, D - 0.05, 0, H - 0.15, m.porcelain);
+      B(0, W, 0, D, H - 0.15, H, m.porcelain);
+      break;
+    case 'pila':
+      B(0, W, 0, D, 0, H - 0.05, m.concrete);
+      B(0, W, 0, 0.06, H - 0.05, H, m.concrete);
+      B(0, W, D - 0.06, D, H - 0.05, H + 0.25, m.concrete);
+      break;
+    case 'cama':
+    case 'camarote': {
+      const levels = f.kind === 'camarote' ? [0, 1.1] : [0];
+      for (const y of levels) {
+        B(0, W, 0, D, y + 0.15, y + 0.35, m.cabinet);
+        B(0.03, W - 0.03, 0.03, D - 0.05, y + 0.35, y + 0.55, m.mattress);
+      }
+      B(0, W, D - 0.06, D, 0, f.kind === 'camarote' ? H : 1.0, m.cabinet);
+      if (f.kind === 'camarote') for (const u of [0, W - 0.06]) B(u, u + 0.06, 0, 0.06, 0, H, m.cabinet);
+      break;
+    }
+    case 'sofa':
+      B(0, W, 0, D, 0.1, 0.45, f.color === 'teal' ? m.fabricTeal : m.fabric);
+      B(0, W, D - 0.22, D, 0.45, H, f.color === 'teal' ? m.fabricTeal : m.fabric);
+      for (const u of [0, W - 0.18]) B(u, u + 0.18, 0, D, 0.45, 0.65, f.color === 'teal' ? m.fabricTeal : m.fabric);
+      break;
+    case 'mesa':
+    case 'escritorio':
+      B(0, W, 0, D, H - 0.04, H, f.kind === 'mesa' ? m.cabinet : m.lightWood);
+      for (const [u, v] of [[0.04, 0.04], [W - 0.08, 0.04], [0.04, D - 0.08], [W - 0.08, D - 0.08]]) B(u, u + 0.04, v, v + 0.04, 0, H - 0.04, m.black);
+      if (f.kind === 'escritorio') B(W * 0.2, W * 0.8, D - 0.12, D - 0.08, H, H + 0.4, m.screen);
+      break;
+    case 'librero': {
+      B(0, W, 0.02, D, 0, H, m.lightWood);
+      let k = 0;
+      for (let y = 0.05; y < H - 0.3; y += 0.36) {
+        for (let u = 0.03; u < W - 0.06; u += 0.05 + (k % 3) * 0.01) B(u, u + 0.04, 0, D - 0.04, y, y + 0.24 + (k % 2) * 0.04, m.books[k++ % m.books.length], { cast: false });
+      }
+      break;
+    }
+    case 'tv':
+      B(0, W, 0, D, 0, 0.5, m.black);
+      B(W * 0.1, W * 0.9, D / 2 - 0.03, D / 2 + 0.03, 0.55, H, m.screen);
+      break;
+    case 'refri':
+      B(0, W, 0, D, 0, H, m.stainless);
+      B(W - 0.07, W - 0.05, -0.05, 0, 0.7, 1.3, m.stainless);
+      break;
+    case 'cocina':
+      B(0, W, 0, D, 0, H - 0.03, m.black);
+      B(0, W, 0, D, H - 0.03, H, m.black);
+      B(0, W, D - 0.08, D, H, H + 0.18, m.stainless);
+      break;
+    case 'lavadora':
+      B(0, W, 0, D, 0, H, m.white);
+      B(0, W, D - 0.14, D, H, H + 0.14, m.white);
+      break;
+    case 'gimnasio':
+      B(0, 0.08, D / 2 - 0.04, D / 2 + 0.04, 0, H, m.black);
+      B(W - 0.08, W, D / 2 - 0.04, D / 2 + 0.04, 0, H, m.black);
+      B(0, W, D / 2 - 0.04, D / 2 + 0.04, H - 0.08, H, m.black);
+      B(0.1, W - 0.1, 0, D, 0.35, 0.45, m.fabric);
+      break;
+    case 'muro':
+      B(0, W, 0, D, 0, H, m.exterior);
+      break;
+    case 'arbol': {
+      const cu = W / 2, cv = D / 2, r = Math.min(W, D) / 2;
+      B(cu - 0.18, cu + 0.18, cv - 0.18, cv + 0.18, 0, H * 0.5, m.bark);
+      let k = 0;
+      for (const [du, dv, dy, rr] of [[0, 0, 0.72, 0.55], [0.35, 0.2, 0.62, 0.42], [-0.35, -0.25, 0.64, 0.45], [0.1, -0.4, 0.8, 0.38], [-0.2, 0.4, 0.84, 0.36]]) {
+        const sph = new THREE.Mesh(new THREE.IcosahedronGeometry(r * rr * 1.5, 1), m.leaves[k++ % m.leaves.length]);
+        const [a, b, c, d] = rect(cu + du * r - 0.01, cu + du * r + 0.01, cv + dv * r - 0.01, cv + dv * r + 0.01);
+        sph.position.set((a + c) / 2, H * dy, (b + d) / 2);
+        sph.castShadow = true;
+        g.add(sph);
+      }
+      break;
+    }
+    case 'mesa_concreto': {
+      const cu = W / 2, cv = D / 2;
+      B(cu - 0.12, cu + 0.12, cv - 0.12, cv + 0.12, 0, H - 0.06, m.concrete);
+      B(cu - 0.5, cu + 0.5, cv - 0.5, cv + 0.5, H - 0.06, H, m.mosaicTop);
+      for (const [du, dv, along] of [[0, -0.85, 'u'], [0, 0.85, 'u'], [-0.85, 0, 'v'], [0.85, 0, 'v']]) {
+        const hw = along === 'u' ? [0.5, 0.15] : [0.15, 0.5];
+        B(cu + du - hw[0], cu + du + hw[0], cv + dv - hw[1], cv + dv + hw[1], 0.38, 0.45, m.mosaicTop);
+        B(cu + du - 0.08, cu + du + 0.08, cv + dv - 0.08, cv + dv + 0.08, 0, 0.38, m.concrete);
+      }
+      break;
+    }
+    case 'fuente': {
+      const cu = W / 2, cv = D / 2;
+      B(cu - W / 2, cu + W / 2, cv - D / 2, cv + D / 2, 0, 0.35, m.white);
+      B(cu - 0.12, cu + 0.12, cv - 0.12, cv + 0.12, 0.35, H, m.white);
+      B(cu - 0.35, cu + 0.35, cv - 0.35, cv + 0.35, H * 0.6, H * 0.6 + 0.08, m.white);
+      break;
+    }
+    default:
+      B(0, W, 0, D, 0, H, m.white);
   }
 }
 

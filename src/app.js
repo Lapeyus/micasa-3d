@@ -6,7 +6,8 @@ import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import { buildHouse, disposeHouse } from './arch/scene3d.js';
 import { PlanEditor, newOpening } from './arch/plan.js';
 import { PanoViewer } from './arch/pano.js';
-import { validate, bounds, OPENING_KINDS, SIDES } from './core/geometry.js';
+import { validate, bounds, OPENING_KINDS, SIDES, roomRects } from './core/geometry.js';
+import { FIXTURE_KINDS, fixtureInfo } from './core/fixtures.js';
 
 const STORE = 'casa-json-v1';
 const $ = (id) => document.getElementById(id);
@@ -133,6 +134,53 @@ function renderInspector() {
       field('Cielo raso', r.ceilingFinish ?? casa.defaults.ceilingFinish, (v) => { r.ceilingFinish = v; }, { options: CEILS }),
       field('Color de paredes', r.wallColor ?? casa.defaults.wallColor, (v) => { r.wallColor = v; }, { type: 'color' }),
     );
+    h('Forma');
+    const note2 = document.createElement('p');
+    note2.className = 'note';
+    note2.textContent = 'Para un cuarto en L o con entrantes, agregue partes rectangulares que toquen el rectángulo principal. Entre partes del mismo cuarto no se dibuja muro.';
+    box.append(note2);
+    (r.parts ?? []).forEach((pr, i) => {
+      const wrap = document.createElement('div');
+      wrap.className = 'oprow';
+      const t = document.createElement('div');
+      t.className = 'optitle';
+      t.textContent = `Parte ${i + 2}`;
+      wrap.append(t, grid2(
+        field('x inicio', pr[0].toFixed(2), (v) => { pr[0] = v; }),
+        field('z inicio', pr[1].toFixed(2), (v) => { pr[1] = v; }),
+        field('x fin', pr[2].toFixed(2), (v) => { pr[2] = v; }),
+        field('z fin', pr[3].toFixed(2), (v) => { pr[3] = v; }),
+      ), button('Quitar parte', () => { checkpoint(); r.parts.splice(i, 1); changed(); plan.render(); renderInspector(); }, 'danger small'));
+      box.append(wrap);
+    });
+    box.append(button('Agregar parte (forma en L)', () => {
+      checkpoint();
+      const [a, b, c, d] = r.rect;
+      (r.parts ??= []).push([a, d, +(a + Math.min(1.5, c - a)).toFixed(2), +(d + 1.0).toFixed(2)]);
+      changed(); plan.render(); renderInspector();
+    }));
+
+    h('Empotrados y muebles');
+    for (const f of (casa.fixtures ?? []).filter((q) => q.room === r.id)) {
+      const b = button(`${fixtureInfo(f.kind).label} · ${(f.rect[2] - f.rect[0]).toFixed(2)} × ${(f.rect[3] - f.rect[1]).toFixed(2)} m`, () => plan.select({ type: 'fixture', id: f.id }), 'small');
+      box.append(b);
+    }
+    const addF = document.createElement('div');
+    addF.className = 'row';
+    const fkSel = document.createElement('select');
+    fkSel.id = 'addFixtureKind';
+    for (const [k, v] of Object.entries(FIXTURE_KINDS)) fkSel.append(new Option(v.label, k));
+    addF.append(fkSel, button('Agregar', () => {
+      checkpoint();
+      const info = fixtureInfo(fkSel.value);
+      const [a, b, c, d] = r.rect;
+      const w = Math.min(1.2, c - a), dep = Math.min(info.depth, d - b);
+      const f = { id: `${r.id}-${fkSel.value}-${Math.random().toString(36).slice(2, 6)}`, room: r.id, kind: fkSel.value, rect: [a, +(d - dep).toFixed(3), +(a + w).toFixed(3), d], front: 'S' };
+      (casa.fixtures ??= []).push(f);
+      changed(); plan.select({ type: 'fixture', id: f.id });
+    }));
+    box.append(addF);
+
     h('Puertas y ventanas');
     const ops = casa.openings.filter((o) => o.room === r.id);
     for (const o of ops) box.append(openingRow(o));
@@ -168,6 +216,7 @@ function renderInspector() {
         checkpoint();
         casa.rooms = casa.rooms.filter((q) => q !== r);
         casa.openings = casa.openings.filter((o) => o.room !== r.id);
+        casa.fixtures = (casa.fixtures ?? []).filter((f) => f.room !== r.id);
         changed(); plan.select(null);
       }, 'danger'),
     );
@@ -185,6 +234,32 @@ function renderInspector() {
         field('Ancho (m)', (x1 - x0).toFixed(2), (v) => { o.rect[2] = +(o.rect[0] + Math.max(0.5, v)).toFixed(3); }),
         field('Fondo (m)', (z1 - z0).toFixed(2), (v) => { o.rect[3] = +(o.rect[1] + Math.max(0.5, v)).toFixed(3); }),
       ),
+    );
+  } else if (sel.type === 'fixture') {
+    const f = (casa.fixtures ?? []).find((q) => q.id === sel.id);
+    if (!f) return;
+    const info = fixtureInfo(f.kind);
+    h(info.label);
+    box.append(
+      field('Tipo', f.kind, (v) => { f.kind = v; }, { options: Object.entries(FIXTURE_KINDS).map(([k, v]) => [k, v.label]) }),
+      field('Frente hacia', f.front ?? 'S', (v) => { f.front = v; }, { options: SIDES.map((x) => [x, SIDE_NAMES[x]]) }),
+      grid2(
+        field('Ancho E-O (m)', (f.rect[2] - f.rect[0]).toFixed(2), (v) => { f.rect[2] = +(f.rect[0] + Math.max(0.1, v)).toFixed(3); }),
+        field('Fondo N-S (m)', (f.rect[3] - f.rect[1]).toFixed(2), (v) => { f.rect[3] = +(f.rect[1] + Math.max(0.1, v)).toFixed(3); }),
+        field('Posición x', f.rect[0].toFixed(2), (v) => { const w = f.rect[2] - f.rect[0]; f.rect[0] = v; f.rect[2] = +(v + w).toFixed(3); }),
+        field('Posición z', f.rect[1].toFixed(2), (v) => { const d = f.rect[3] - f.rect[1]; f.rect[1] = v; f.rect[3] = +(v + d).toFixed(3); }),
+        field('Alto (m)', (f.height ?? info.height).toFixed(2), (v) => { f.height = v; }),
+        field('Cuarto', f.room, (v) => { f.room = v; }, { options: casa.rooms.map((q) => [q.id, q.name]) }),
+      ),
+      button('Girar 90°', () => {
+        checkpoint();
+        const [a, b, c, d] = f.rect;
+        const cx = (a + c) / 2, cz = (b + d) / 2, hw = (c - a) / 2, hd = (d - b) / 2;
+        f.rect = [cx - hd, cz - hw, cx + hd, cz + hw].map((v) => +v.toFixed(3));
+        f.front = { S: 'E', E: 'N', N: 'W', W: 'S' }[f.front ?? 'S'];
+        changed(); plan.render(); renderInspector();
+      }),
+      button('Eliminar', () => { checkpoint(); casa.fixtures = casa.fixtures.filter((q) => q !== f); changed(); plan.select(null); }, 'danger'),
     );
   } else if (sel.type === 'opening') {
     const o = casa.openings.find((q) => q.id === sel.id);
@@ -213,6 +288,7 @@ function openingRow(o, full = false) {
   wrap.append(grid2(
     field('Tipo', o.kind, (v) => { o.kind = v; }, { options: Object.entries(OPENING_KINDS).map(([k, v]) => [k, v.label]) }),
     field('Lado', o.side, (v) => { o.side = v; }, { options: SIDES.map((s) => [s, SIDE_NAMES[s]]) }),
+    ...((casa.rooms.find((q) => q.id === o.room)?.parts?.length) ? [field('En la parte', String(o.part ?? 0), (v) => { o.part = +v; }, { options: roomRects(casa.rooms.find((q) => q.id === o.room)).map((_, i) => [String(i), i === 0 ? 'Principal' : `Parte ${i + 1}`]) })] : []),
     field('Desde la esquina (m)', o.offset.toFixed(2), (v) => { o.offset = v; }),
     field('Ancho (m)', o.width.toFixed(2), (v) => { o.width = v; }),
     field('Alto (m)', (o.height ?? info.height).toFixed(2), (v) => { o.height = v; }),
@@ -361,7 +437,7 @@ scene.add(sun, sun.target);
 let house = null;
 let dirty3d = true;
 const cutPlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), 99);
-const state3d = { ceilings: 'auto', outdoor: true, markers: true, labels: true, cut: 0, walk: false };
+const state3d = { ceilings: 'auto', outdoor: true, markers: true, labels: true, built: true, furn: true, cut: 0, walk: false };
 
 function rebuild() {
   if (house) { scene.remove(house.root); disposeHouse(house); }
@@ -396,6 +472,9 @@ function apply3d() {
   cutPlane.constant = state3d.cut > 0 && !state3d.walk ? state3d.cut : 99;
   house.layers.outdoor.visible = state3d.outdoor;
   house.layers.markers.visible = state3d.markers;
+  house.layers.empotrados.visible = state3d.built;
+  house.layers.muebles.visible = state3d.furn;
+  house.layers.exterior.visible = state3d.outdoor;
   labelRenderer.domElement.hidden = !state3d.labels || state3d.walk;
 }
 
@@ -419,7 +498,7 @@ for (const b of document.querySelectorAll('[data-view3d]')) b.addEventListener('
 });
 $('cut').addEventListener('input', () => { state3d.cut = parseFloat($('cut').value); updateCutLabel(); apply3d(); });
 function updateCutLabel() { $('cutVal').textContent = state3d.cut > 0 ? `${state3d.cut.toFixed(2)} m` : 'sin corte'; }
-for (const [id, key] of [['t3Outdoor', 'outdoor'], ['t3Markers', 'markers'], ['t3Labels', 'labels']]) {
+for (const [id, key] of [['t3Outdoor', 'outdoor'], ['t3Markers', 'markers'], ['t3Labels', 'labels'], ['t3Built', 'built'], ['t3Furn', 'furn']]) {
   $(id).addEventListener('click', () => {
     state3d[key] = !state3d[key];
     $(id).setAttribute('aria-pressed', String(state3d[key]));
@@ -564,4 +643,4 @@ showIssues();
 if (migratedFrom) status(`Se cargó la revisión ${DEFAULT.revision} de la planta. Su versión anterior quedó respaldada; Deshacer la recupera.`);
 setMode(location.hash === '#3d' ? '3d' : 'plan');
 requestAnimationFrame(() => { plan.fit(); plan.render(); frame('maqueta'); });
-window.__casa = { get casa() { return casa; }, scene, camera, controls, plan };
+window.__casa = { get casa() { return casa; }, scene, camera, controls, plan, rebuild: () => { dirty3d = true; rebuild(); } };

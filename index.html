@@ -140,6 +140,13 @@
   .panoItem strong { display: block; font-weight: 600; }
   .panoItem small { color: var(--muted); }
 
+  .renders { position: absolute; inset: 0; overflow-y: auto; padding: 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 460px), 1fr)); gap: 12px; align-content: start; background: var(--bg); }
+  .renders figure { margin: 0; display: grid; gap: 6px; }
+  .renders img { width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); cursor: zoom-in; background: var(--panel-2); }
+  .renders figcaption { font: 600 13px var(--body); }
+  .renders figcaption span { display: block; font: 12px var(--body); color: var(--muted); font-weight: 400; }
+  .lightbox { position: fixed; inset: 0; z-index: 20; background: rgba(8, 7, 6, 0.94); display: grid; place-items: center; padding: 16px; cursor: zoom-out; }
+  .lightbox img { max-width: 100%; max-height: 100%; border-radius: 4px; }
   .walk-hint { position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; font-size: 12px; color: var(--muted); }
 
   .pano-overlay { position: fixed; inset: 0; background: #0b0a09; z-index: 10; display: grid; grid-template-rows: auto 1fr; }
@@ -170,11 +177,13 @@
       <button role="tab" data-mode="plan" aria-selected="true">Planta</button>
       <button role="tab" data-mode="3d" aria-selected="false">3D</button>
       <button role="tab" data-mode="panos" aria-selected="false">Panorámicas</button>
+      <button role="tab" data-mode="renders" aria-selected="false">Renders</button>
     </nav>
   </header>
 
   <main>
     <svg id="plan" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" aria-label="Planta editable de la casa"></svg>
+    <div id="renders" class="renders" hidden></div>
     <div id="stage3d" hidden>
       <div class="walk-hint" id="walkHint" hidden>Arrastre para mirar · WASD o flechas para caminar</div>
     </div>
@@ -213,8 +222,15 @@
         <button class="btn" id="t3Labels" type="button" aria-pressed="true">Nombres</button>
         <button class="btn" id="t3Built" type="button" aria-pressed="true">Empotrados</button>
         <button class="btn" id="t3Furn" type="button" aria-pressed="true">Muebles</button>
+        <button class="btn" id="t3Roofs" type="button" aria-pressed="false">Techos</button>
       </div>
       <p class="note">Toque una esfera naranja para abrir la panorámica tomada en ese punto.</p>
+    </div>
+
+    <div data-pane="renders" class="section" hidden>
+      <h2>Render arquitectónico</h2>
+      <p class="note">Imágenes fotorrealistas hechas en Blender Cycles a partir del mismo casa.json: cielo físico con sol de la tarde, vidrio real, luz rebotada y luces cálidas en cada cuarto. Toque una imagen para verla completa.</p>
+      <p class="note">Para regenerarlas después de cambiar la planta: exporte el .glb desde la pestaña 3D a assets/modelo/casa.glb y corra tools/render/render_casa.py con Blender (ver README).</p>
     </div>
 
     <div data-pane="panos" class="section" hidden>
@@ -241,6 +257,8 @@
     </div>
   </aside>
 </div>
+
+<div class="lightbox" id="lightbox" hidden><img id="lightboxImg" alt=""></div>
 
 <div class="pano-overlay" id="panoOverlay" hidden>
   <div class="pano-bar">

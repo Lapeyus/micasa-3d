@@ -1048,7 +1048,7 @@
    "heading": 0
   }
  ],
- "revision": 4,
+ "revision": 6,
  "fixtures": [
   {
    "id": "coc-mueble-o",
@@ -1614,6 +1614,465 @@
     -3.3
    ],
    "front": "S"
+  },
+  {
+   "id": "mb-sala-sofa",
+   "room": "sala",
+   "kind": "sofa",
+   "rect": [
+    8.2,
+    0.1,
+    11.3,
+    1.0
+   ],
+   "front": "N"
+  },
+  {
+   "id": "mb-sala-sofa2",
+   "room": "sala",
+   "kind": "sofa",
+   "rect": [
+    11.4,
+    0.1,
+    12.35,
+    2.6
+   ],
+   "front": "W"
+  },
+  {
+   "id": "mb-sala-alfombra",
+   "room": "sala",
+   "kind": "alfombra",
+   "rect": [
+    8.4,
+    1.2,
+    11.2,
+    3.4
+   ],
+   "front": "S"
+  },
+  {
+   "id": "mb-sala-mesa-centro",
+   "room": "sala",
+   "kind": "mesa",
+   "rect": [
+    9.3,
+    1.9,
+    10.5,
+    2.6
+   ],
+   "front": "S",
+   "height": 0.42
+  },
+  {
+   "id": "mb-sala-tv",
+   "room": "sala",
+   "kind": "tv",
+   "rect": [
+    8.6,
+    4.7,
+    10.9,
+    5.2
+   ],
+   "front": "S"
+  },
+  {
+   "id": "mb-sala-sillon-rosado",
+   "room": "sala",
+   "kind": "sillon",
+   "rect": [
+    5.3,
+    -1.8,
+    6.1,
+    -1.0
+   ],
+   "front": "N"
+  },
+  {
+   "id": "mb-sala-sillon-amarillo",
+   "room": "sala",
+   "kind": "sillon",
+   "rect": [
+    7.3,
+    -1.8,
+    8.1,
+    -1.0
+   ],
+   "front": "N",
+   "color": "amarillo"
+  },
+  {
+   "id": "mb-comedor-mesa",
+   "room": "sala",
+   "kind": "mesa",
+   "rect": [
+    4.3,
+    2.4,
+    6.1,
+    3.4
+   ],
+   "front": "S"
+  },
+  {
+   "id": "mb-comedor-silla-s0",
+   "room": "sala",
+   "kind": "silla",
+   "rect": [
+    4.45,
+    1.85,
+    4.9,
+    2.3
+   ],
+   "front": "N"
+  },
+  {
+   "id": "mb-comedor-silla-n0",
+   "room": "sala",
+   "kind": "silla",
+   "rect": [
+    4.55,
+    3.5,
+    5.0,
+    3.95
+   ],
+   "front": "S"
+  },
+  {
+   "id": "mb-comedor-silla-s1",
+   "room": "sala",
+   "kind": "silla",
+   "rect": [
+    5.25,
+    1.85,
+    5.7,
+    2.3
+   ],
+   "front": "N"
+  },
+  {
+   "id": "mb-comedor-silla-n1",
+   "room": "sala",
+   "kind": "silla",
+   "rect": [
+    5.35,
+    3.5,
+    5.8,
+    3.95
+   ],
+   "front": "S"
+  },
+  {
+   "id": "mb-sala-vitrina",
+   "room": "sala",
+   "kind": "librero",
+   "rect": [
+    3.5,
+    4.2,
+    4.4,
+    4.6
+   ],
+   "front": "S"
+  },
+  {
+   "id": "mb-tv-sofa1",
+   "room": "tv",
+   "kind": "sofa",
+   "rect": [
+    8.2,
+    5.45,
+    10.2,
+    6.35
+   ],
+   "front": "N"
+  },
+  {
+   "id": "mb-tv-sofa2",
+   "room": "tv",
+   "kind": "sofa",
+   "rect": [
+    12.6,
+    9.5,
+    14.6,
+    10.4
+   ],
+   "front": "S"
+  },
+  {
+   "id": "mb-tv-tv",
+   "room": "tv",
+   "kind": "tv",
+   "rect": [
+    9.6,
+    9.9,
+    11.2,
+    10.35
+   ],
+   "front": "S"
+  },
+  {
+   "id": "mb-tv-comedor",
+   "room": "tv",
+   "kind": "mesa",
+   "rect": [
+    7.7,
+    7.4,
+    8.8,
+    8.6
+   ],
+   "front": "E"
+  },
+  {
+   "id": "mb-tv-silla0",
+   "room": "tv",
+   "kind": "silla",
+   "rect": [
+    8.85,
+    7.45,
+    9.3,
+    7.9
+   ],
+   "front": "W"
+  },
+  {
+   "id": "mb-tv-silla1",
+   "room": "tv",
+   "kind": "silla",
+   "rect": [
+    8.85,
+    8.1,
+    9.3,
+    8.55
+   ],
+   "front": "W"
+  },
+  {
+   "id": "mb-est-sofa-turquesa",
+   "room": "estudio",
+   "kind": "sofa",
+   "rect": [
+    3.55,
+    7.0,
+    4.45,
+    9.2
+   ],
+   "front": "E",
+   "color": "teal"
+  },
+  {
+   "id": "mb-est-sofa-rojo",
+   "room": "estudio",
+   "kind": "sofa",
+   "rect": [
+    5.2,
+    5.45,
+    7.2,
+    6.35
+   ],
+   "front": "N"
+  },
+  {
+   "id": "mb-est-librero",
+   "room": "estudio",
+   "kind": "librero",
+   "rect": [
+    6.9,
+    7.2,
+    7.25,
+    8.4
+   ],
+   "front": "W"
+  },
+  {
+   "id": "mb-nin-camarote",
+   "room": "dorm_ninos",
+   "kind": "camarote",
+   "rect": [
+    18.2,
+    8.4,
+    20.15,
+    9.4
+   ],
+   "front": "W"
+  },
+  {
+   "id": "mb-nin-cama",
+   "room": "dorm_ninos",
+   "kind": "cama",
+   "rect": [
+    18.2,
+    5.55,
+    20.15,
+    6.55
+   ],
+   "front": "W"
+  },
+  {
+   "id": "mb-verde-cama",
+   "room": "dorm_verde",
+   "kind": "cama",
+   "rect": [
+    14.2,
+    11.2,
+    15.6,
+    13.2
+   ],
+   "front": "S"
+  },
+  {
+   "id": "mb-ros-cama",
+   "room": "cuarto_rosado",
+   "kind": "cama",
+   "rect": [
+    15.3,
+    16.0,
+    16.25,
+    17.85
+   ],
+   "front": "S"
+  },
+  {
+   "id": "mb-ros-escritorio",
+   "room": "cuarto_rosado",
+   "kind": "escritorio",
+   "rect": [
+    13.85,
+    16.6,
+    14.55,
+    17.8
+   ],
+   "front": "E"
+  },
+  {
+   "id": "mb-ofi-escritorio",
+   "room": "oficina",
+   "kind": "escritorio",
+   "rect": [
+    0.4,
+    22.15,
+    2.4,
+    22.85
+   ],
+   "front": "N"
+  },
+  {
+   "id": "mb-ofi-librero",
+   "room": "oficina",
+   "kind": "librero",
+   "rect": [
+    -0.5,
+    23.6,
+    -0.15,
+    25.0
+   ],
+   "front": "E"
+  },
+  {
+   "id": "mb-tall-escritorio",
+   "room": "taller",
+   "kind": "escritorio",
+   "rect": [
+    10.4,
+    25.0,
+    12.2,
+    25.65
+   ],
+   "front": "S"
+  },
+  {
+   "id": "mb-gim-maquina",
+   "room": "gimnasio",
+   "kind": "gimnasio",
+   "rect": [
+    0.3,
+    6.5,
+    1.7,
+    8.2
+   ],
+   "front": "E"
+  },
+  {
+   "id": "mb-gim-caminadora",
+   "room": "gimnasio",
+   "kind": "escritorio",
+   "rect": [
+    2.1,
+    7.5,
+    3.1,
+    9.3
+   ],
+   "front": "S",
+   "height": 0.5
+  }
+ ],
+ "roofs": [
+  {
+   "id": "techo-principal",
+   "name": "Techo principal (cuatro aguas)",
+   "kind": "hip",
+   "rect": [
+    -0.15,
+    -0.15,
+    20.35,
+    10.6
+   ],
+   "pitch": 18,
+   "overhang": 0.7
+  },
+  {
+   "id": "techo-frente",
+   "name": "Techo del volumen de la sala y porche",
+   "kind": "hip",
+   "rect": [
+    4.8,
+    -2.05,
+    14.7,
+    0
+   ],
+   "pitch": 18,
+   "overhang": 0.7
+  },
+  {
+   "id": "techo-ala",
+   "name": "Techo del ala trasera (dos aguas)",
+   "kind": "gable",
+   "ridge": "z",
+   "rect": [
+    9.5,
+    10.6,
+    16.45,
+    18.05
+   ],
+   "pitch": 15,
+   "overhang": 0.6
+  },
+  {
+   "id": "techo-anexo",
+   "name": "Techo del anexo (dos aguas)",
+   "kind": "gable",
+   "ridge": "x",
+   "rect": [
+    -0.7,
+    22.55,
+    14.35,
+    25.85
+   ],
+   "pitch": 15,
+   "overhang": 0.5
+  },
+  {
+   "id": "techo-caseta",
+   "name": "Techo de la caseta",
+   "kind": "gable",
+   "ridge": "x",
+   "rect": [
+    17.75,
+    22.25,
+    20.45,
+    25.85
+   ],
+   "pitch": 12,
+   "overhang": 0.2,
+   "base": 2.3
   }
  ]
 }

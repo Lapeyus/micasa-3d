@@ -54,6 +54,8 @@ function setMode(m) {
   for (const b of document.querySelectorAll('[data-mode]')) b.setAttribute('aria-selected', String(b.dataset.mode === m));
   $('plan').hidden = m !== 'plan';
   $('stage3d').hidden = m !== '3d';
+  $('renders').hidden = m !== 'renders';
+  if (m === 'renders') renderGallery();
   for (const p of document.querySelectorAll('[data-pane]')) p.hidden = p.dataset.pane !== m;
   if (m === '3d') { resize3d(); if (dirty3d) rebuild(); }
   if (m === 'plan') { plan.render(); }
@@ -400,7 +402,7 @@ if (!inFrame) {
   $('btnDownloadJson').addEventListener('click', () => download(new Blob([JSON.stringify(casa, null, 2)], { type: 'application/json' }), 'casa.json'));
   $('btnGlb').addEventListener('click', () => {
     if (dirty3d) rebuild();
-    new GLTFExporter().parse(house.root, (glb) => download(new Blob([glb], { type: 'model/gltf-binary' }), 'casa.glb'), (e) => status(e.message), { binary: true });
+    exportGLB().then((glb) => download(new Blob([glb], { type: 'model/gltf-binary' }), 'casa.glb'), (e) => status(e.message));
   });
 }
 function status(t) { $('status').textContent = t; }
@@ -438,7 +440,7 @@ scene.add(sun, sun.target);
 let house = null;
 let dirty3d = true;
 const cutPlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), 99);
-const state3d = { ceilings: 'auto', outdoor: true, markers: true, labels: true, built: true, furn: true, cut: 0, walk: false };
+const state3d = { ceilings: 'auto', outdoor: true, markers: true, labels: true, built: true, furn: true, roofs: false, cut: 0, walk: false };
 
 function rebuild() {
   if (house) { scene.remove(house.root); disposeHouse(house); }
@@ -476,6 +478,7 @@ function apply3d() {
   house.layers.empotrados.visible = state3d.built;
   house.layers.muebles.visible = state3d.furn;
   house.layers.exterior.visible = state3d.outdoor;
+  house.layers.roofs.visible = state3d.roofs && state3d.cut === 0;
   labelRenderer.domElement.hidden = !state3d.labels || state3d.walk;
 }
 
@@ -499,7 +502,7 @@ for (const b of document.querySelectorAll('[data-view3d]')) b.addEventListener('
 });
 $('cut').addEventListener('input', () => { state3d.cut = parseFloat($('cut').value); updateCutLabel(); apply3d(); });
 function updateCutLabel() { $('cutVal').textContent = state3d.cut > 0 ? `${state3d.cut.toFixed(2)} m` : 'sin corte'; }
-for (const [id, key] of [['t3Outdoor', 'outdoor'], ['t3Markers', 'markers'], ['t3Labels', 'labels'], ['t3Built', 'built'], ['t3Furn', 'furn']]) {
+for (const [id, key] of [['t3Outdoor', 'outdoor'], ['t3Markers', 'markers'], ['t3Labels', 'labels'], ['t3Built', 'built'], ['t3Furn', 'furn'], ['t3Roofs', 'roofs']]) {
   $(id).addEventListener('click', () => {
     state3d[key] = !state3d[key];
     $(id).setAttribute('aria-pressed', String(state3d[key]));
@@ -617,6 +620,38 @@ function renderPanoList() {
   }
 }
 
+// ---------- Renders ----------
+const RENDERS = [
+  ['fachada', 'Fachada desde la calle', 'Muro bajo con verja, fuente frente al ventanal y porche con arco'],
+  ['aerea', 'Vista aérea', 'Techo de cuatro aguas, ala trasera de dos aguas, anexo y patio'],
+  ['maqueta', 'Maqueta sin techos', 'Distribución completa vista desde arriba'],
+  ['patio', 'Patio trasero', 'Corredor de la pila, ala de la cocina y árboles'],
+  ['sala', 'Sala y comedor', 'Vigas oscuras, piso provenzal y el volumen que avanza hacia la calle'],
+  ['cocina', 'Cocina', 'Galera con fregadero bajo la ventana, alacena y paso al lavado'],
+  ['estudio', 'Estudio', 'Sofá turquesa, sofá cama, librero y arco hacia la sala'],
+];
+function renderGallery() {
+  const box = $('renders');
+  if (box.childElementCount) return;
+  for (const [id, title, sub] of RENDERS) {
+    const fig = document.createElement('figure');
+    const img = document.createElement('img');
+    img.loading = 'lazy';
+    img.src = `assets/renders/${id}.jpg`;
+    img.alt = title;
+    img.addEventListener('error', () => fig.remove(), { once: true });
+    img.addEventListener('click', () => { $('lightboxImg').src = img.src; $('lightboxImg').alt = title; $('lightbox').hidden = false; });
+    const cap = document.createElement('figcaption');
+    cap.textContent = title;
+    const span = document.createElement('span');
+    span.textContent = sub;
+    cap.append(span);
+    fig.append(img, cap);
+    box.append(fig);
+  }
+}
+$('lightbox').addEventListener('click', () => { $('lightbox').hidden = true; });
+
 // ---------- Bucle ----------
 const clock = new THREE.Clock();
 renderer.setAnimationLoop(() => {
@@ -644,4 +679,12 @@ showIssues();
 if (migratedFrom) status(`Se cargó la revisión ${DEFAULT.revision} de la planta. Su versión anterior quedó respaldada; Deshacer la recupera.`);
 setMode(location.hash === '#3d' ? '3d' : 'plan');
 requestAnimationFrame(() => { plan.fit(); plan.render(); frame('maqueta'); });
-window.__casa = { get casa() { return casa; }, scene, camera, controls, plan, rebuild: () => { dirty3d = true; rebuild(); } };
+// Exporta la casa completa (con techos, sin marcadores) a GLB; lo usa el render de Blender.
+async function exportGLB() {
+  const h = buildHouse(casa);
+  h.layers.markers.removeFromParent();
+  const glb = await new GLTFExporter().parseAsync(h.root, { binary: true, maxTextureSize: 2048 });
+  disposeHouse(h);
+  return glb;
+}
+window.__casa = { get casa() { return casa; }, scene, camera, controls, plan, exportGLB, rebuild: () => { dirty3d = true; rebuild(); } };

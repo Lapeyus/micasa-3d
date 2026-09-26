@@ -35,3 +35,18 @@ solo se ven en la copia local. Para regenerar las versiones web de las panorámi
 ```bash
 mkdir -p panoramas-web && for f in panoramas/*.jpg; do sips -Z 8192 -s formatOptions 80 "$f" --out "panoramas-web/$(basename "$f")"; done
 ```
+
+## Render arquitectónico (Blender Cycles)
+
+1. En la app, pestaña 3D, el modelo se exporta a `assets/modelo/casa.glb` (con el servidor de desarrollo,
+   `window.__casa.exportGLB()` y `PUT /__save/modelo/casa.glb`; o el botón «Descargar .glb»).
+2. Render:
+
+```bash
+/Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup -P tools/render/render_casa.py -- --samples 256 --res 1920x1080
+```
+
+`--shots fachada,aerea,maqueta,patio,sala,cocina,estudio` elige tomas y `--preview` hace una pasada rápida a media
+resolución. El script ajusta materiales (vidrio con transmisión, metales, relieve de repello y pisos, bisel de
+aristas), cambia los árboles esquemáticos por árboles orgánicos, agrega calle, cielo físico, sol y una luz cálida
+por cuarto leída de `casa.json`. Las imágenes quedan en `assets/renders/` (PNG) y en JPG para la web.

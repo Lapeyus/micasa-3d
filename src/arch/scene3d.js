@@ -59,13 +59,22 @@ function mats() {
     ivy: std({ color: 0x3d6b2a, roughness: 1 }),
     ivy2: std({ color: 0x4f7f33, roughness: 1 }),
     tile: std({ color: 0x9c4a2e, roughness: 0.8 }),
+    eave: std({ map: TX.woodGrain({ base: [74, 44, 28], seed: 41 }), roughness: 0.6 }),
   };
+  // nombres estables: los usa el render de Blender para ajustar cada material
+  for (const [k, v] of Object.entries(M)) {
+    if (v?.isMaterial) v.name = k;
+    else if (Array.isArray(v)) v.forEach((mm, i) => { if (mm?.isMaterial) mm.name = `${k}-${i}`; });
+    else if (v && typeof v === 'object') for (const [k2, mm] of Object.entries(v)) if (mm?.isMaterial) mm.name = `${k}-${k2}`;
+  }
   return M;
 }
 
 function wallMat(color) {
   if (!wallMats.has(color)) {
-    wallMats.set(color, new THREE.MeshStandardMaterial({ color, map: mats().plasterMap, roughness: 0.92 }));
+    const w = new THREE.MeshStandardMaterial({ color, map: mats().plasterMap, roughness: 0.92 });
+    w.name = `pared-${color.replace('#', '')}`;
+    wallMats.set(color, w);
   }
   return wallMats.get(color);
 }
@@ -112,7 +121,7 @@ export function buildHouse(casa) {
   const root = new THREE.Group();
   root.name = 'casa';
   const layers = {};
-  for (const k of ['floors', 'walls', 'openings', 'ceilings', 'outdoor', 'markers', 'empotrados', 'muebles', 'exterior']) {
+  for (const k of ['floors', 'walls', 'openings', 'ceilings', 'outdoor', 'markers', 'empotrados', 'muebles', 'exterior', 'roofs']) {
     layers[k] = new THREE.Group();
     layers[k].name = k;
     root.add(layers[k]);
@@ -150,10 +159,14 @@ export function buildHouse(casa) {
   for (const f of casa.fixtures ?? []) {
     const info = fixtureInfo(f.kind);
     const g = new THREE.Group();
+    g.name = f.id;
     g.userData = { fixture: f.id, name: info.label };
     buildFixture(g, f, info, m);
     layers[info.layer].add(g);
   }
+
+  // Techos (cuatro aguas o dos aguas) sobre rectángulos de planta
+  for (const rf of casa.roofs ?? []) buildRoof(layers.roofs, rf, m);
 
   // Vanos: marcos, hojas y ventanas
   for (const op of openings) buildOpening(layers.openings, op, m);
@@ -282,6 +295,60 @@ function buildOpening(parent, op, m) {
   }
 }
 
+// Techo de lámina con alero. `rect` es el contorno de muros; el alero sale `overhang` m.
+// hip: cuatro aguas; gable: dos aguas con cumbrera a lo largo de `ridge` ('x' o 'z').
+function buildRoof(parent, rf, m) {
+  const ov = rf.overhang ?? 0.7;
+  const pitch = THREE.MathUtils.degToRad(rf.pitch ?? 18);
+  const [a0, b0, a1, b1] = rf.rect;
+  const x0 = a0 - ov, z0 = b0 - ov, x1 = a1 + ov, z1 = b1 + ov;
+  const base = rf.base ?? 2.8; // altura del techo sobre la línea de muro
+  const ye = base - ov * Math.tan(pitch);
+  const ridgeAlongX = rf.kind === 'gable' ? rf.ridge !== 'z' : (x1 - x0) >= (z1 - z0);
+  const half = ridgeAlongX ? (z1 - z0) / 2 : (x1 - x0) / 2;
+  const top = ye + half * Math.tan(pitch);
+  const inset = rf.kind === 'gable' ? 0 : Math.min(half, (ridgeAlongX ? x1 - x0 : z1 - z0) / 2 - 0.01);
+  let r0, r1, A, B, C, D;
+  A = [x0, ye, z0]; B = [x1, ye, z0]; C = [x1, ye, z1]; D = [x0, ye, z1];
+  if (ridgeAlongX) { const zm = (z0 + z1) / 2; r0 = [x0 + inset, top, zm]; r1 = [x1 - inset, top, zm]; }
+  else { const xm = (x0 + x1) / 2; r0 = [xm, top, z0 + inset]; r1 = [xm, top, z1 - inset]; }
+  const tris = ridgeAlongX
+    ? [[A, r0, B], [B, r0, r1], [B, r1, C], [C, r1, D], [D, r1, r0], [D, r0, A]]
+    : [[A, r0, D], [D, r0, r1], [D, r1, C], [C, r1, B], [B, r1, r0], [B, r0, A]];
+  const pos = [], uv = [];
+  for (const t of tris) for (const v of t) { pos.push(...v); uv.push(ridgeAlongX ? v[0] : v[2], ridgeAlongX ? v[2] : v[0]); }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  g.computeVertexNormals();
+  const mesh = new THREE.Mesh(g, m.zinc);
+  mesh.castShadow = mesh.receiveShadow = true;
+  mesh.userData = { roof: rf.id };
+  parent.add(mesh);
+  // cenefa de madera y cielo del alero
+  const f = 0.18;
+  box(parent, x0 - 0.03, x1 + 0.03, ye - f, ye, z0 - 0.03, z0, m.eave);
+  box(parent, x0 - 0.03, x1 + 0.03, ye - f, ye, z1, z1 + 0.03, m.eave);
+  box(parent, x0 - 0.03, x0, ye - f, ye, z0, z1, m.eave);
+  box(parent, x1, x1 + 0.03, ye - f, ye, z0, z1, m.eave);
+  box(parent, x0, x1, ye - 0.03, ye, z0, z1, m.eave, { cast: false });
+  // culatas (triángulos de pared) de las dos aguas
+  if (rf.kind === 'gable') {
+    const s0 = ridgeAlongX ? b0 : a0, s1 = ridgeAlongX ? b1 : a1;
+    const peak = (half - ov) * Math.tan(pitch);
+    const shape = new THREE.Shape([new THREE.Vector2(s0, 0), new THREE.Vector2(s1, 0), new THREE.Vector2((s0 + s1) / 2, peak)]);
+    m.gableMat ??= Object.assign(m.exterior.clone(), { name: 'exterior' });
+    m.gableMat.side = THREE.DoubleSide;
+    for (const at of ridgeAlongX ? [a0, a1] : [b0, b1]) {
+      const tri = new THREE.Mesh(new THREE.ShapeGeometry(shape), m.gableMat);
+      if (ridgeAlongX) { tri.rotation.y = -Math.PI / 2; tri.position.set(at, base, 0); }
+      else tri.position.set(0, base, at);
+      tri.castShadow = true;
+      parent.add(tri);
+    }
+  }
+}
+
 // Marco local de un elemento: u a lo largo del frente, v hacia adentro desde el frente.
 function localFrame(f) {
   const [x0, z0, x1, z1] = f.rect;
@@ -339,7 +406,8 @@ function buildFixture(g, f, info, m) {
       break;
     case 'ducha': {
       B(0, W, 0, D, 0, 0.06, m.tray);
-      const gl = B(0, W, 0, 0.01, 0.06, H, m.glassPane ?? (m.glassPane = new THREE.MeshPhysicalMaterial({ color: 0xcfe3e6, roughness: 0.1, transparent: true, opacity: 0.35, depthWrite: false })), { cast: false });
+      m.glassPane ??= Object.assign(new THREE.MeshPhysicalMaterial({ color: 0xcfe3e6, roughness: 0.1, transparent: true, opacity: 0.35, depthWrite: false }), { name: 'glassPane' });
+      const gl = B(0, W, 0, 0.01, 0.06, H, m.glassPane, { cast: false });
       gl.renderOrder = 2;
       B(0, 0.03, 0, 0.03, 0.06, H, m.stainless);
       B(W - 0.03, W, 0, 0.03, 0.06, H, m.stainless);
@@ -410,6 +478,18 @@ function buildFixture(g, f, info, m) {
       B(W - 0.08, W, D / 2 - 0.04, D / 2 + 0.04, 0, H, m.black);
       B(0, W, D / 2 - 0.04, D / 2 + 0.04, H - 0.08, H, m.black);
       B(0.1, W - 0.1, 0, D, 0.35, 0.45, m.fabric);
+      break;
+    case 'silla':
+      B(0, W, 0, D, 0.42, 0.46, m.cabinet);
+      for (const [u, v] of [[0.02, 0.02], [W - 0.05, 0.02], [0.02, D - 0.05], [W - 0.05, D - 0.05]]) B(u, u + 0.03, v, v + 0.03, 0, 0.42, m.cabinet);
+      B(0, W, D - 0.04, D, 0.46, H, m.cabinet);
+      break;
+    case 'alfombra':
+      B(0, W, 0, D, 0, 0.012, m.rug ?? (m.rug = Object.assign(new THREE.MeshStandardMaterial({ map: TX.hydraulic({ tile: 0.6 }), color: 0x9fb6c9, roughness: 1 }), { name: 'rug' })), { cast: false });
+      break;
+    case 'sillon':
+      B(0, W, 0, D, 0.1, 0.45, f.color === 'amarillo' ? (m.fabricYellow ??= Object.assign(new THREE.MeshStandardMaterial({ color: 0xd9a21e, roughness: 0.95 }), { name: 'fabricYellow' })) : (m.fabricPink ??= Object.assign(new THREE.MeshStandardMaterial({ color: 0xc86a78, roughness: 0.95 }), { name: 'fabricPink' })));
+      B(0, W, D - 0.2, D, 0.45, H, f.color === 'amarillo' ? m.fabricYellow : m.fabricPink);
       break;
     case 'muro':
       B(0, W, 0, D, 0, H, m.exterior);

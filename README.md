@@ -180,3 +180,28 @@ visitantes con una copia guardada más vieja reciben la nueva revisión; la ante
 - La cocina detallada (`cocina/`) usa su propio modelo de medidas y no lee *casa.json*.
 - El JPG de los renders y la copia de `casa.glb` a `assets/` son pasos manuales.
 - Sin pruebas automatizadas de la interfaz ni del render (ver [docs/TESTING.md](docs/TESTING.md)).
+
+## Casa de muñecas imprimible
+
+Piezas STL para FDM a partir de la misma estructura base (muros y vanos de `geometry.js`) más
+los empotrados y muebles del GLB. Por defecto toma la escala más grande que cabe en la cama
+(AnkerMake M5C, 220 mm → 1:112).
+
+```bash
+node tools/imprimir/exportar_muros.mjs > /tmp/muros.json
+.venv/bin/python tools/imprimir/casa_imprimible.py /tmp/muros.json --cama 220
+/Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup -P tools/imprimir/render_piezas.py -- assets/imprimir/escala_1-112
+```
+
+| Pieza | Qué es |
+|---|---|
+| `casa_base.stl` | Piso, muros con puertas y ventanas, columnas de corredores, cocina, closets y baños |
+| `casa_techo.stl` | Techo principal + sala + ala trasera + corredor de la pila: una sola pieza que se levanta |
+| `anexo_base.stl`, `anexo_techo.stl`, `caseta_techo.stl` | Oficina, taller, bodegas y su corredor, al fondo del patio |
+| `muebles_1.stl` | 39 muebles sueltos en una placa |
+
+- Los techos tienen el fondo plano (se imprimen sin soportes) y una ranura donde entran los muros
+  exteriores, que sobresalen 1.2 mm: el techo queda centrado solo y se levanta para ver el interior.
+- Muros de mínimo 1.6 mm y detalles de mínimo 0.8 mm; lo que quedaría flotando (frentes de mueble
+  despegados, astillas) se descarta.
+- Cambiar la planta en la app y volver a exportar `casa.glb` regenera todo.
